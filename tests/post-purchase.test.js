@@ -30,11 +30,12 @@ test("completed iOS orders unlock the success guide and stop polling", () => {
   assert.equal(state.terminal, true);
 });
 
-test("the APK guide contains all five steps, troubleshooting and Zalo delivery", () => {
-  const guide = apkInstallationGuide();
+test("the APK guide contains all five steps, troubleshooting and direct download", () => {
+  const guide = apkInstallationGuide({ code: "LG12345678" });
   for (let step = 1; step <= 5; step += 1) assert.ok(guide.includes(`BƯỚC ${step}`));
   assert.match(guide, /ỨNG DỤNG CHƯA ĐƯỢC CÀI ĐẶT/);
-  assert.match(guide, /Tệp Locket APK sẽ được gửi trong Zalo/);
+  assert.match(guide, /href="\/api\/orders\/LG12345678\/apk"/);
+  assert.match(guide, /download="LocketGold.website.apk"/);
 });
 
 test("activation requires completion rather than request acceptance", () => {

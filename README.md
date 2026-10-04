@@ -4,6 +4,12 @@ Website nhiều trang cho `locketgold.info`, gồm giao diện bán gói, tải 
 
 ## Chạy local
 
+Kho bài viết được nhập với quyền sử dụng do chủ website xác nhận từ `https://locketgold.app/bai-viet`: 2.499 bài, lưu riêng tại `public/imported-posts/` và ảnh tại `public/images/imported-posts/`. Trang bài viết ghép kho này với các bài được đăng qua quản trị và phân trang 20 bài/trang. Nội dung giữ tiêu đề, ngày đăng, phần giới thiệu và các đoạn, danh sách, định dạng của trang nguồn; mã thực thi của trang nguồn không được nhập.
+
+Nhập lại bằng `python scripts/import-source-posts.py` (cần `requests` và `beautifulsoup4`). Script dùng bộ nhớ đệm trong `tmp/source-posts/` để tiếp tục khi mất kết nối. Kiểm tra đối chiếu toàn bộ nội dung với HTML nguồn đã lưu bằng `python scripts/verify-source-posts.py`. Báo cáo số bài và ảnh nguồn không còn tồn tại nằm ở `public/imported-posts/import-report.json`.
+
+Danh sách chỉ hiển thị một bản cho mỗi slug hoặc tiêu đề trùng (chuẩn hóa Unicode, khoảng trắng và chữ hoa/thường), ưu tiên bài có sẵn trong cơ sở dữ liệu. 13 bài đã đăng được đối chiếu với kho nguồn; liên kết `duplicate_of` giữ nhận diện cả bài đã đổi nhẹ tiêu đề. Có thêm 42 bản trùng cả tiêu đề và nội dung trong nguồn, nên danh sách sau gộp hiện có 2.457 bài. Chi tiết đối chiếu ở `public/imported-posts/duplicate-report.json`; dữ liệu bài có sẵn được giữ nguyên.
+
 ```powershell
 npm install
 npm run dev
@@ -22,7 +28,9 @@ Giá mặc định dùng chung cho giao diện và API nằm trong `src/plans.js
 
 Trang `/thanh-toan/` có bốn bước: nhập thông tin, tự xác nhận Username, chọn gói và rà soát trước khi tạo đơn. Bước xác nhận gọi API public NoDNS để lấy UID, tên, ảnh đại diện và trạng thái Gold; lỗi tra cứu sẽ giữ khách ở bước nhập thông tin.
 
-Sau khi tạo đơn, trang tự kiểm tra trạng thái mỗi 5 giây và tạm dừng khi tab bị ẩn. Gói Android mở hướng dẫn nhận APK qua Zalo và cài đặt khi SePay xác nhận thanh toán. Gói iOS chỉ mở hướng dẫn lên Gold khi API nâng cấp xác nhận hoàn tất; HTTP 200 hoặc phản hồi đang xử lý chưa được tính là hoàn tất.
+Sau khi tạo đơn, trang tự kiểm tra trạng thái mỗi 5 giây và tạm dừng khi tab bị ẩn. Gói Android mở nút tải APK trực tiếp và hướng dẫn cài đặt khi SePay xác nhận thanh toán. Gói iOS chỉ mở hướng dẫn lên Gold khi API nâng cấp xác nhận hoàn tất; HTTP 200 hoặc phản hồi đang xử lý chưa được tính là hoàn tất.
+
+Tệp `LocketGold.website.apk` được lưu thành các phần dưới 25 MiB trong `public/downloads/android/`, với manifest tại `worker/android-apk-manifest.js`. API `/api/orders/:code/apk` kiểm tra đơn Android đã thanh toán rồi truyền các phần liên tiếp thành một tệp tải xuống; đường dẫn từng phần không cho truy cập công khai. Khi thay APK, chạy `node scripts/import-android-apk.js "D:\Dowload\LocketGold.website.apk"`, sau đó build và deploy như bình thường. Kiểm tra tải bằng `npm test` đối chiếu dung lượng và SHA-256 của tệp.
 
 Đơn khách lẻ có hạn thanh toán **10 phút từ lúc tạo**, lưu mốc `expires_at` trên máy chủ (migration `0008_order_payment_deadline.sql`). Trang hiển thị đồng hồ đếm ngược; đơn hết hạn ẩn QR và cho tạo đơn mới. Cron mỗi phút, API tra cứu và trang admin cập nhật đơn `pending` quá hạn thành `cancelled` với dấu `expired_at`. Các đơn đã nhận tiền hoặc hoàn tất không bị hủy theo thời gian. Webhook nhận sau hạn vẫn lưu giao dịch với kết quả `expired_order` để đối soát, không tự cấp Gold; cần liên hệ hỗ trợ nếu khách đã chuyển tiền.
 
@@ -165,7 +173,7 @@ Trong admin → **API NoDNS → Đổi API key NoDNS**, nhập khóa mới rồi
 - CTV đăng nhập qua `/api/ctv/auth/login`, xem tài khoản và lịch sử NoDNS. Tạo đơn gọi `/api/ctv/lookup` rồi `/api/ctv/upgrade`, sử dụng lượt NoDNS.
 - Khách lẻ tra cứu tên, avatar và trạng thái Gold qua `/api/v1/userinfo` trước khi xác nhận tài khoản.
 - Khi SePay xác nhận thanh toán, Worker gọi `/api/v1/grant` với `{user, days, note}`: tháng = 30 ngày, năm = 365 ngày, vĩnh viễn bỏ `days`. Chỉ `status=success` và `data.active=true` mới hoàn tất đơn. Lỗi hoặc phản hồi chờ giữ đơn ở `paid`, cần đối soát; Worker không tự gọi lại grant để tránh trừ lượt trùng.
-- API cấp Gold áp dụng cho iOS. Android tiếp tục nhận APK qua Zalo.
+- API cấp Gold áp dụng cho iOS. Android tải APK trực tiếp trên trang đơn sau khi xác nhận thanh toán.
 - Link DNS lấy từ `/api/v1/profile` nếu có key và chưa cấu hình link riêng. Mục **API NoDNS** trong admin kiểm tra quota và lịch sử cấp Gold.
 
 Cấu hình secrets:

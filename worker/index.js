@@ -3,6 +3,7 @@ import { DEFAULT_PLANS } from "../src/plans.js";
 import { activationConfirmed } from "./activation.js";
 import { adminCredential, passwordHash, verifyAdminPassword } from "./admin-account.js";
 import { DEFAULT_WELCOME, validateWelcome } from "../src/welcome-notice.js";
+import { downloadAndroidApk } from "./android-apk.js";
 import { providerRequest, unwrap, grantPayload, remoteCookie, remoteLogin, clearRemoteCookie, publicCtv, portalOrders, resolveNoDnsEnv, encryptNoDnsKey, sameGoldExpiry, purchasedGoldExpiry, providerGoldOrder } from "./nodns.js";
 
 const loginAttempts = new Map();
@@ -12,6 +13,7 @@ export default {
   async scheduled(_event, env, ctx) { ctx.waitUntil(Promise.all([expirePendingOrders(env), repairQueuedGoldExpiries(env)])); },
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.pathname.startsWith("/downloads/android/")) return secure(new Response("Not found", { status: 404 }));
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
 
     try {
@@ -51,6 +53,8 @@ async function route(request, env, ctx, url) {
   if (pathname === "/api/activity" && request.method === "GET") return getActivity(env);
   if (pathname === "/api/quote" && request.method === "POST") return quoteOrder(request, env);
   if (pathname === "/api/orders" && request.method === "POST") return createOrder(request, env);
+  const apkDownload = pathname.match(/^\/api\/orders\/([^/]+)\/apk$/);
+  if (apkDownload && request.method === "GET") return downloadAndroidApk(request, env, apkDownload[1]);
   if (pathname.startsWith("/api/orders/") && request.method === "GET") return getOrder(env, decodeURIComponent(pathname.slice(12)));
   if (pathname === "/api/sepay/webhook" && request.method === "POST") return sepayWebhook(request, env, ctx);
 
@@ -137,7 +141,7 @@ function normalizePlan(plan) {
 
 async function getPosts(env) {
   if (!env.DB) return json({ posts: [] });
-  const { results } = await env.DB.prepare("SELECT slug, title, excerpt, published_at FROM posts WHERE status = 'published' ORDER BY published_at DESC LIMIT 30").all();
+  const { results } = await env.DB.prepare("SELECT slug, title, excerpt, published_at FROM posts WHERE status = 'published' ORDER BY published_at DESC").all();
   return json({ posts: results || [] });
 }
 

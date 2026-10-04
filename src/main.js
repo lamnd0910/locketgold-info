@@ -9,6 +9,7 @@ import { addAdminGold } from "./admin-gold.js";
 import { addProviderKeyForm } from "./admin-provider-key.js";
 import { initPostImages } from "./admin-post-images.js";
 import { renderPostContent } from "./post-content.js";
+import { mergePostArchive, postArchivePage } from "./post-archive.js";
 import { mountPaymentDeadline } from "./payment-deadline.js";
 import { addAdminAccount } from "./admin-account.js";
 import { addAdminWelcome } from "./admin-welcome.js";
@@ -143,7 +144,7 @@ const pages = {
   <section class="section section--tint"><div class="container two-col"><div><span class="eyebrow">Quy trình</span><h2>Bốn bước rõ ràng</h2><p>Không cần tạo tài khoản khách hàng. Bước xác nhận chỉ giúp bạn tự kiểm tra Tên người dùng đã nhập, chưa phải tra cứu tài khoản Locket.</p></div><ol class="step-list"><li><b>01</b><div><strong>Nhập thông tin</strong><span>Nhập Tên người dùng và kênh liên hệ; không nhập mật khẩu hay OTP.</span></div></li><li><b>02</b><div><strong>Tự xác nhận</strong><span>Kiểm tra lại Tên người dùng trước khi tạo đơn.</span></div></li><li><b>03</b><div><strong>Chọn gói</strong><span>Kiểm tra nền tảng, thời hạn và số tiền.</span></div></li><li><b>04</b><div><strong>Thanh toán & theo dõi</strong><span>Nhận mã đơn và hướng dẫn sau khi tạo đơn.</span></div></li></ol></div></section>
   <section class="section"><div class="container"><div class="section-heading"><span class="eyebrow">Tin mới</span><h2>Mẹo dùng Locket an toàn</h2></div><div class="post-grid">${postCards(fallbackPosts)}</div><div class="center"><a class="text-link" href="/bai-viet/">Xem tất cả bài viết →</a></div></div></section>`),
 
-  pricing: () => publicShell(`${pageHero("Lên Gold", "Chọn gói phù hợp", "Bốn gói cho iOS và Android, mua trực tiếp mà không cần đăng nhập.")}<section class="section section--compact"><div class="container"><div id="all-plans">${planCards()}</div><p class="info-note">ⓘ Gói Android: tệp APK được gửi qua Zalo sau khi thanh toán. Hướng dẫn cài đặt sẽ hiện trên trang đơn.</p><section class="pricing-video" aria-labelledby="gold-video-title"><span class="eyebrow">Hướng dẫn Locket Gold</span><h2 id="gold-video-title">Video hướng dẫn</h2><div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/1KQWGs0dJgY" title="Video hướng dẫn Locket Gold" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><a class="text-link" href="https://www.youtube.com/watch?feature=shared&v=1KQWGs0dJgY" target="_blank" rel="noopener noreferrer">Mở video trên YouTube ↗</a></section></div></section>`),
+  pricing: () => publicShell(`${pageHero("Lên Gold", "Chọn gói phù hợp", "Bốn gói cho iOS và Android, mua trực tiếp mà không cần đăng nhập.")}<section class="section section--compact"><div class="container"><div id="all-plans">${planCards()}</div><p class="info-note">ⓘ Gói Android: nút tải APK và hướng dẫn cài đặt sẽ hiện trên trang đơn sau khi thanh toán.</p><section class="pricing-video" aria-labelledby="gold-video-title"><span class="eyebrow">Hướng dẫn Locket Gold</span><h2 id="gold-video-title">Video hướng dẫn</h2><div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/1KQWGs0dJgY" title="Video hướng dẫn Locket Gold" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><a class="text-link" href="https://www.youtube.com/watch?feature=shared&v=1KQWGs0dJgY" target="_blank" rel="noopener noreferrer">Mở video trên YouTube ↗</a></section></div></section>`),
 
   trust: () => publicShell(`${pageHero("Uy tín và phản hồi", "Trải nghiệm từ khách hàng", "Khám phá hình ảnh phản hồi và những cam kết khi đặt gói tại Locket Gold.")}${feedbackGallery()}<section class="section section--compact"><div class="container"><div class="trust-grid">
     <article><span>🔒</span><h2>Không thu mật khẩu</h2><p>Biểu mẫu chỉ nhận Tên người dùng Locket và thông tin liên hệ bạn chủ động cung cấp.</p></article>
@@ -166,7 +167,7 @@ const pages = {
       <section id="guide-panel-3" class="guide-slide" role="tabpanel" aria-labelledby="guide-tab-3" tabindex="0" data-guide-panel="2" hidden><div><span class="eyebrow">Bước 3 / 4</span><h2>Chọn nền tảng và thời hạn</h2><p>Chọn đúng gói iOS hoặc Android, xem thời hạn và giá tạm tính. Nếu có mã giảm giá, áp dụng trước khi sang bước rà soát đơn.</p><p>Ở bước cuối, kiểm tra lại Tên người dùng, gói và số tiền trước khi bấm tạo đơn.</p><a class="button button--outline button--small" href="/len-gold/">Xem bảng giá →</a></div><figure class="guide-illustration"><a href="/images/buoc3.png" target="_blank" rel="noopener noreferrer" aria-label="Xem ảnh hướng dẫn bước 3 ở kích thước đầy đủ"><img class="guide-slide-image" src="/images/buoc3.png" alt="Minh họa bước 3: thanh toán bằng VietQR" width="921" height="1152" loading="lazy" decoding="async"></a><figcaption>Ảnh minh họa · Bấm để xem ảnh lớn.</figcaption></figure></section>
       <section id="guide-panel-4" class="guide-slide" role="tabpanel" aria-labelledby="guide-tab-4" tabindex="0" data-guide-panel="3" hidden><div><span class="eyebrow">Bước 4 / 4</span><h2>Tạo đơn, rồi mới chuyển khoản</h2><p>Sau khi tạo đơn thành công, trang web mới hiển thị ngân hàng, số tiền, mã đơn và nội dung chuyển khoản của đơn đó. Chuyển đúng thông tin đang hiển thị trên trang đơn.</p><p>Giữ trang đơn để bấm <b>Kiểm tra thanh toán</b>. Nếu cần hỗ trợ, gửi mã đơn — không gửi mật khẩu hay OTP.</p></div><figure class="guide-illustration"><a href="/images/buoc4.png" target="_blank" rel="noopener noreferrer" aria-label="Xem ảnh hướng dẫn bước 4 ở kích thước đầy đủ"><img class="guide-slide-image" src="/images/buoc4.png" alt="Minh họa bước 4: kiểm tra Locket Gold sau kích hoạt" width="1195" height="896" loading="lazy" decoding="async"></a><figcaption>Ảnh minh họa · Bấm để xem ảnh lớn.</figcaption></figure></section>
     </div><div class="guide-controls"><button class="button button--outline button--small" type="button" data-guide-previous disabled>← Bước trước</button><span id="guide-position" aria-live="polite">Bước 1 / 4</span><button class="button button--small" type="button" data-guide-next>Bước tiếp →</button></div></div>
-    <div class="guide-extra"><article><h2>Dùng iPhone?</h2><p>Một số gói cần hướng dẫn DNS riêng. Chỉ tải từ liên kết trên trang web và đọc kỹ các bước cài đặt.</p><a class="text-link" href="/tai-dns/">Xem hướng dẫn DNS →</a></article><article><h2>Dùng Android?</h2><p>Tệp APK được gửi qua Zalo sau khi thanh toán. Hướng dẫn nhận tệp và cài đặt sẽ hiện trên trang đơn khi giao dịch được xác nhận.</p><a class="text-link" href="/len-gold/">Xem gói Android →</a></article></div>
+    <div class="guide-extra"><article><h2>Dùng iPhone?</h2><p>Một số gói cần hướng dẫn DNS riêng. Chỉ tải từ liên kết trên trang web và đọc kỹ các bước cài đặt.</p><a class="text-link" href="/tai-dns/">Xem hướng dẫn DNS →</a></article><article><h2>Dùng Android?</h2><p>Tải tệp APK trực tiếp trên trang đơn sau khi thanh toán được xác nhận. Làm theo hướng dẫn cài đặt hiển thị cùng nút tải.</p><a class="text-link" href="/len-gold/">Xem gói Android →</a></article></div>
     <section class="guide-faq" aria-labelledby="guide-faq-title"><div class="section-heading"><span class="eyebrow">Câu hỏi thường gặp</span><h2 id="guide-faq-title">Bạn cần biết trước khi mua</h2></div><div class="guide-faq-list">
       <details><summary>Có cần đưa mật khẩu hoặc OTP không?</summary><p>Không. Biểu mẫu đặt gói chỉ nhận Tên người dùng Locket và thông tin liên hệ hỗ trợ. Nếu ai yêu cầu mật khẩu hoặc OTP, hãy dừng lại.</p></details>
       <details><summary>Trang có xác minh tài khoản Locket của tôi không?</summary><p>Có. Trang tra cứu tài khoản qua NoDNS và hiển thị tên, ảnh đại diện cùng trạng thái Gold để bạn đối chiếu trước khi thanh toán.</p></details>
@@ -185,7 +186,7 @@ const pages = {
     <div class="center"><a class="button" href="/len-gold/">Chọn gói Gold →</a></div>
   </div></section>`),
 
-  contact: () => publicShell(`${pageHero("Liên hệ", "Bạn cần hỗ trợ?", "Liên hệ qua các kênh chính thức dưới đây; không gửi mật khẩu hoặc OTP qua bất kỳ kênh nào.")}<section class="section section--compact"><div class="container"><img class="contact-banner" src="/images/lienhe.webp" alt="Banner liên hệ hỗ trợ Locket Gold" width="2048" height="768" decoding="async"><div id="contact-links" class="contact-grid"><article><span class="social-icon social-icon--zalo" aria-hidden="true">Zalo</span><h2>Zalo</h2><p><a class="contact-link" data-contact="support_zalo" href="https://zalo.me/g/3mdkix3pinjmxtozcjjp">https://zalo.me/g/3mdkix3pinjmxtozcjjp</a></p></article><article><span class="social-icon social-icon--facebook" aria-hidden="true">f</span><h2>Facebook</h2><p><a class="contact-link" data-contact="support_facebook" href="https://www.facebook.com/duckcozy">https://www.facebook.com/duckcozy</a></p></article><article><span class="social-icon social-icon--telegram" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21.6 4.3 18.4 20c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.3-8.4c.4-.4-.1-.6-.6-.3L5.8 13.4.9 11.9c-1.1-.3-1.1-1 .2-1.5L20.2 3c.9-.3 1.7.2 1.4 1.3Z"/></svg></span><h2>Telegram</h2><p><a class="contact-link" data-contact="support_telegram" href="https://t.me/anhduckkkk">t.me/anhduckkkk</a></p></article></div></div></section>`),
+  contact: () => publicShell(`${pageHero("Liên hệ", "Bạn cần hỗ trợ?", "Liên hệ qua các kênh chính thức dưới đây; không gửi mật khẩu hoặc OTP qua bất kỳ kênh nào.")}<section class="section section--compact"><div class="container"><img class="contact-banner" src="/images/lienhe.webp" alt="Banner liên hệ hỗ trợ Locket Gold" width="2048" height="768" decoding="async"><div id="contact-links" class="contact-grid"><article><span class="social-icon social-icon--zalo" aria-hidden="true">Zalo</span><h2>Zalo</h2><p><a class="contact-link" target="_blank" rel="noopener noreferrer" data-contact="support_zalo" href="https://zalo.me/g/3mdkix3pinjmxtozcjjp">https://zalo.me/g/3mdkix3pinjmxtozcjjp</a></p></article><article><span class="social-icon social-icon--facebook" aria-hidden="true">f</span><h2>Facebook</h2><p><a class="contact-link" target="_blank" rel="noopener noreferrer" data-contact="support_facebook" href="https://www.facebook.com/duckcozy">https://www.facebook.com/duckcozy</a></p></article><article><span class="social-icon social-icon--telegram" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21.6 4.3 18.4 20c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.3-8.4c.4-.4-.1-.6-.6-.3L5.8 13.4.9 11.9c-1.1-.3-1.1-1 .2-1.5L20.2 3c.9-.3 1.7.2 1.4 1.3Z"/></svg></span><h2>Telegram</h2><p><a class="contact-link" target="_blank" rel="noopener noreferrer" data-contact="support_telegram" href="https://t.me/anhduckkkk">t.me/anhduckkkk</a></p></article></div></div></section>`),
 
   checkout: checkoutPage,
   ctv: ctvPage,
@@ -200,7 +201,7 @@ function postCards(posts) {
   };
   return posts.map((post) => {
     const href = `/bai-viet/?bai=${encodeURIComponent(post.slug || "")}`;
-    const image = images[post.slug] || "/images/logo.png";
+    const image = /^\/images\/imported-posts\/[a-f0-9]{24}\.(png|jpe?g|webp|gif)$/.test(post.thumbnail || "") ? post.thumbnail : images[post.slug] || "/images/logo.png";
     return `<article class="post-card"><a class="post-card-image" href="${href}" aria-label="${escapeHtml(post.title)}"><img src="${image}" alt="${escapeHtml(post.title)}" width="1536" height="1024" loading="lazy" decoding="async"></a><span>${escapeHtml(formatDate(post.published_at))}</span><h2><a href="${href}">${escapeHtml(post.title)}</a></h2><p>${escapeHtml(post.excerpt || "")}</p><a href="${href}">Đọc bài →</a></article>`;
   }).join("");
 }
@@ -360,20 +361,36 @@ async function loadPosts() {
   const localPost = fallbackPosts.find((post) => post.slug === slug);
   const renderPost = (post) => {
     list.className = "article-view";
-    list.innerHTML = `<article><a class="text-link" href="/bai-viet/">← Tất cả bài viết</a><span>${escapeHtml(formatDate(post.published_at))}</span><h2>${escapeHtml(post.title)}</h2><p class="article-lead">${escapeHtml(post.excerpt)}</p><div>${renderPostContent(post.content)}</div></article>`;
+    const cover = /^\/images\/imported-posts\/[a-f0-9]{24}\.(png|jpe?g|webp|gif)$/.test(post.cover || "") ? `<img class="article-cover" src="${escapeHtml(post.cover)}" alt="${escapeHtml(post.title)}" decoding="async">` : "";
+    list.innerHTML = `<article><a class="text-link" href="/bai-viet/">← Tất cả bài viết</a><span>${escapeHtml(formatDate(post.published_at))}${post.category ? ` · ${escapeHtml(post.category)}` : ""}</span><h2>${escapeHtml(post.title)}</h2>${cover}<p class="article-lead">${escapeHtml(post.excerpt)}</p><div class="article-body">${renderPostContent(post.content, post.content_blocks)}</div></article>`;
     document.title = `${post.title} | Locket Gold`;
   };
   if (localPost) renderPost(localPost);
   else if (slug) { list.className = "article-view"; list.innerHTML = '<p role="status">Đang tải bài viết…</p>'; }
   try {
     if (slug) {
-      const post = await api(`/api/posts/${encodeURIComponent(slug)}`);
+      let post;
+      try { post = await api(`/api/posts/${encodeURIComponent(slug)}`); }
+      catch (error) {
+        if (!/^[a-z0-9-]{1,200}$/.test(slug)) throw error;
+        post = await api(`/imported-posts/${slug}.json`);
+      }
       if (!post.title || !post.content) throw new Error("Bài viết chưa có nội dung.");
       renderPost(post);
       return;
     }
-    const { posts } = await api("/api/posts");
-    if (posts?.length) list.innerHTML = postCards(posts);
+    const [live, archive] = await Promise.allSettled([api("/api/posts"), api("/imported-posts/index.json")]);
+    const livePosts = live.status === "fulfilled" && Array.isArray(live.value.posts) && live.value.posts.length ? live.value.posts : fallbackPosts;
+    const imported = archive.status === "fulfilled" && Array.isArray(archive.value) ? archive.value : [];
+    const posts = mergePostArchive(livePosts, imported);
+    const selected = postArchivePage(posts, new URLSearchParams(location.search).get("trang"));
+    list.innerHTML = postCards(selected.posts);
+    const controls = document.createElement("div");
+    controls.className = "post-archive-controls";
+    const pageLink = (number, label = number) => `<a class="button button--small button--outline" href="/bai-viet/?trang=${number}"${number === selected.page ? ' aria-current="page"' : ""}>${label}</a>`;
+    const visiblePages = [...new Set([1, selected.page - 1, selected.page, selected.page + 1, selected.totalPages])].filter((number) => number >= 1 && number <= selected.totalPages).sort((a, b) => a - b);
+    controls.innerHTML = `<p>Hiển thị ${selected.total ? selected.start + 1 : 0}–${selected.start + selected.posts.length} trong ${selected.total.toLocaleString("vi-VN")} bài viết</p><nav class="post-pagination" aria-label="Phân trang bài viết">${selected.page > 1 ? pageLink(selected.page - 1, "← Trước") : ""}${visiblePages.map((number, index) => `${index && number > visiblePages[index - 1] + 1 ? '<span aria-hidden="true">…</span>' : ""}${pageLink(number)}`).join("")}${selected.page < selected.totalPages ? pageLink(selected.page + 1, "Sau →") : ""}</nav>`;
+    list.after(controls);
   } catch {
     if (slug && !localPost) list.innerHTML = '<article><h2>Chưa tìm thấy bài viết</h2><p>Bài viết có thể chưa được xuất bản hoặc tạm thời không tải được.</p><a class="text-link" href="/bai-viet/">← Tất cả bài viết</a></article>';
   }
@@ -724,7 +741,7 @@ async function checkOrder(code) {
     const guide = document.querySelector("#post-payment-guide");
     const guideType = state.showApkGuide ? "apk" : state.showGoldGuide ? "gold" : state.paid && !order.gold_revoked_at && order.platform === "iOS" ? "gold-pending" : "";
     if (guideType && guideType !== paymentGuideShown) {
-      guide.innerHTML = guideType === "apk" ? apkInstallationGuide() : goldCompletionGuide(order);
+      guide.innerHTML = guideType === "apk" ? apkInstallationGuide(order) : goldCompletionGuide(order);
       document.querySelector("#payment-result").classList.toggle("payment-result--success", guideType !== "apk");
       guide.hidden = false;
       paymentGuideShown = guideType;

@@ -1,0 +1,304 @@
+{
+  "existing_articles": 13,
+  "duplicates": 13,
+  "pairs": [
+    {
+      "existing_slug": "cach-mo-khoa-locket-gold-chuan-nhat-2026-phan-488",
+      "imported_slug": "cach-mo-khoa-locket-gold-chuan-nhat-2026-phan-488-5102"
+    },
+    {
+      "existing_slug": "toan-tap-cai-dat-locket-gold-cuc-muot-2025-phan-489",
+      "imported_slug": "toan-tap-cai-dat-locket-gold-cuc-muot-2025-phan-489-4943"
+    },
+    {
+      "existing_slug": "tong-hop-su-dung-locket-ban-quyen-2026-chi-trong-3-phut-phan-490",
+      "imported_slug": "tong-hop-su-dung-locket-ban-quyen-2026-chi-trong-3-phut-phan-490-3324"
+    },
+    {
+      "existing_slug": "tong-hop-cap-nhat-locket-premium-2025-an-toan-100-phan-491",
+      "imported_slug": "tong-hop-cap-nhat-locket-premium-2025-an-toan-100-phan-491-1121"
+    },
+    {
+      "existing_slug": "huong-dan-nang-cap-locket-ban-quyen-2026-chuan-nhat-2026-phan-492",
+      "imported_slug": "huong-dan-nang-cap-locket-ban-quyen-2026-chuan-nhat-2026-phan-492-1212"
+    },
+    {
+      "existing_slug": "huong-dan-su-dung-locket-gold-phien-ban-moi-nhat-phan-493",
+      "imported_slug": "huong-dan-su-dung-locket-gold-phien-ban-moi-nhat-phan-493-4544"
+    },
+    {
+      "existing_slug": "bi-quyet-trai-nghiem-locket-premium-2025-an-toan-100-phan-494",
+      "imported_slug": "bi-quyet-trai-nghiem-locket-premium-2025-an-toan-100-phan-494-5626"
+    },
+    {
+      "existing_slug": "chi-tiet-kich-hoat-locket-ios-2026-khong-quang-cao-phan-495",
+      "imported_slug": "chi-tiet-kich-hoat-locket-ios-2026-khong-quang-cao-phan-495-8690"
+    },
+    {
+      "existing_slug": "toan-tap-mo-khoa-locket-gold-cuc-muot-2025-phan-496",
+      "imported_slug": "toan-tap-mo-khoa-locket-gold-cuc-muot-2025-phan-496-8298"
+    },
+    {
+      "existing_slug": "chi-tiet-cap-nhat-locket-premium-2025-cuc-muot-2025-phan-497",
+      "imported_slug": "chi-tiet-cap-nhat-locket-premium-2025-cuc-muot-2025-phan-497-7594"
+    },
+    {
+      "existing_slug": "giai-ma-toi-uu-locket-android-2026-chuan-nhat-2026-phan-498",
+      "imported_slug": "giai-ma-toi-uu-locket-android-2026-chuan-nhat-2026-phan-498-9809"
+    },
+    {
+      "existing_slug": "toan-tap-cai-dat-locket-gold-khong-quang-cao-phan-499",
+      "imported_slug": "toan-tap-cai-dat-locket-gold-khong-quang-cao-phan-499-4422"
+    },
+    {
+      "existing_slug": "toan-tap-cai-dat-locket-ios-2026-khong-quang-cao",
+      "imported_slug": "toan-tap-cai-dat-locket-ios-2026-khong-quang-cao-phan-500-5189"
+    }
+  ],
+  "source_duplicate_groups": [
+    {
+      "keep": "family-sharing-locket-gold-khong-can-icloud-va-an-toan-2",
+      "duplicates": [
+        "family-sharing-locket-gold-khong-can-icloud-va-an-toan"
+      ]
+    },
+    {
+      "keep": "locket-va-bereal-an-toan-va-khong-can-icloud-2",
+      "duplicates": [
+        "locket-va-bereal-an-toan-va-khong-can-icloud"
+      ]
+    },
+    {
+      "keep": "dung-2-tai-khoan-locket-mien-phi-va-an-toan-2",
+      "duplicates": [
+        "dung-2-tai-khoan-locket-mien-phi-va-an-toan"
+      ]
+    },
+    {
+      "keep": "rep-anh-locket-bang-anh-khac-khong-icl-va-moi-nhat-2",
+      "duplicates": [
+        "rep-anh-locket-bang-anh-khac-khong-icl-va-moi-nhat"
+      ]
+    },
+    {
+      "keep": "locket-recap-la-gi-moi-nhat-va-bao-hanh-2",
+      "duplicates": [
+        "locket-recap-la-gi-moi-nhat-va-bao-hanh"
+      ]
+    },
+    {
+      "keep": "locket-khong-tai-duoc-tren-app-store-play-an-toan-va-chinh-hang-2",
+      "duplicates": [
+        "locket-khong-tai-duoc-tren-app-store-play-an-toan-va-chinh-hang"
+      ]
+    },
+    {
+      "keep": "review-locket-gold-nang-cap-khong-icl-va-gia-re-3",
+      "duplicates": [
+        "review-locket-gold-nang-cap-khong-icl-va-gia-re-2",
+        "review-locket-gold-nang-cap-khong-icl-va-gia-re"
+      ]
+    },
+    {
+      "keep": "file-cau-hinh-locket-dns-profile-an-toan-bao-hanh-va-an-toan-2",
+      "duplicates": [
+        "file-cau-hinh-locket-dns-profile-an-toan-bao-hanh-va-an-toan"
+      ]
+    },
+    {
+      "keep": "thanh-toan-locket-momo-loi-mien-phi-va-nhanh-nhat-2",
+      "duplicates": [
+        "thanh-toan-locket-momo-loi-mien-phi-va-nhanh-nhat"
+      ]
+    },
+    {
+      "keep": "tai-toan-bo-album-locket-gia-re-va-an-toan-2",
+      "duplicates": [
+        "tai-toan-bo-album-locket-gia-re-va-an-toan"
+      ]
+    },
+    {
+      "keep": "dien-thoai-android-locket-tot-uy-tin-va-bao-hanh-2",
+      "duplicates": [
+        "dien-thoai-android-locket-tot-uy-tin-va-bao-hanh"
+      ]
+    },
+    {
+      "keep": "locket-recap-la-gi-gia-re-va-gia-re-2",
+      "duplicates": [
+        "locket-recap-la-gi-gia-re-va-gia-re"
+      ]
+    },
+    {
+      "keep": "locket-co-an-toan-khong-moi-nhat-va-moi-nhat-2",
+      "duplicates": [
+        "locket-co-an-toan-khong-moi-nhat-va-moi-nhat"
+      ]
+    },
+    {
+      "keep": "locket-gioi-han-ket-ban-khong-icl-va-gia-re-2",
+      "duplicates": [
+        "locket-gioi-han-ket-ban-khong-icl-va-gia-re"
+      ]
+    },
+    {
+      "keep": "locket-va-bereal-bao-hanh-va-khong-can-icloud-2",
+      "duplicates": [
+        "locket-va-bereal-bao-hanh-va-khong-can-icloud"
+      ]
+    },
+    {
+      "keep": "hen-gio-gui-anh-locket-khong-icl-va-chinh-hang-2",
+      "duplicates": [
+        "hen-gio-gui-anh-locket-khong-icl-va-chinh-hang"
+      ]
+    },
+    {
+      "keep": "ket-ban-nhieu-nguoi-tren-locket-nhanh-nhat-va-uy-tin-2",
+      "duplicates": [
+        "ket-ban-nhieu-nguoi-tren-locket-nhanh-nhat-va-uy-tin"
+      ]
+    },
+    {
+      "keep": "locket-khong-dung-duoc-camera-mien-phi-va-khong-can-icloud-2",
+      "duplicates": [
+        "locket-khong-dung-duoc-camera-mien-phi-va-khong-can-icloud"
+      ]
+    },
+    {
+      "keep": "locket-bao-loi-da-xay-ra-su-co-bao-hanh-va-khong-icl-2",
+      "duplicates": [
+        "locket-bao-loi-da-xay-ra-su-co-bao-hanh-va-khong-icl"
+      ]
+    },
+    {
+      "keep": "locket-gold-android-ra-mat-moi-nhat-va-moi-nhat-3",
+      "duplicates": [
+        "locket-gold-android-ra-mat-moi-nhat-va-moi-nhat-2",
+        "locket-gold-android-ra-mat-moi-nhat-va-moi-nhat"
+      ]
+    },
+    {
+      "keep": "mua-locket-gold-qua-ben-thu-3-an-toan-va-an-toan-2",
+      "duplicates": [
+        "mua-locket-gold-qua-ben-thu-3-an-toan-va-an-toan"
+      ]
+    },
+    {
+      "keep": "khoi-phuc-anh-locket-xoa-nham-gia-re-va-chinh-hang-2",
+      "duplicates": [
+        "khoi-phuc-anh-locket-xoa-nham-gia-re-va-chinh-hang"
+      ]
+    },
+    {
+      "keep": "bat-den-flash-chup-ban-dem-locket-bao-hanh-va-khong-can-icloud-2",
+      "duplicates": [
+        "bat-den-flash-chup-ban-dem-locket-bao-hanh-va-khong-can-icloud"
+      ]
+    },
+    {
+      "keep": "locket-khong-cap-quyen-truy-cap-camera-chinh-hang-va-moi-nhat-2",
+      "duplicates": [
+        "locket-khong-cap-quyen-truy-cap-camera-chinh-hang-va-moi-nhat"
+      ]
+    },
+    {
+      "keep": "tai-sao-locket-loi-khong-gui-duoc-anh-nhanh-nhat-va-bao-hanh-2",
+      "duplicates": [
+        "tai-sao-locket-loi-khong-gui-duoc-anh-nhanh-nhat-va-bao-hanh"
+      ]
+    },
+    {
+      "keep": "app-gui-video-dai-hon-locket-chinh-hang-va-bao-hanh-2",
+      "duplicates": [
+        "app-gui-video-dai-hon-locket-chinh-hang-va-bao-hanh"
+      ]
+    },
+    {
+      "keep": "chen-chu-len-anh-locket-uy-tin-va-chinh-hang-2",
+      "duplicates": [
+        "chen-chu-len-anh-locket-uy-tin-va-chinh-hang"
+      ]
+    },
+    {
+      "keep": "locket-widget-cach-su-dung-an-toan-va-uy-tin-2",
+      "duplicates": [
+        "locket-widget-cach-su-dung-an-toan-va-uy-tin"
+      ]
+    },
+    {
+      "keep": "locket-ios-17-loi-bao-hanh-va-khong-icl-2",
+      "duplicates": [
+        "locket-ios-17-loi-bao-hanh-va-khong-icl"
+      ]
+    },
+    {
+      "keep": "an-danh-xem-anh-locket-gia-re-va-gia-re-2",
+      "duplicates": [
+        "an-danh-xem-anh-locket-gia-re-va-gia-re"
+      ]
+    },
+    {
+      "keep": "luu-anh-locket-ve-dien-thoai-khong-vo-nhanh-nhat-va-chinh-hang-2",
+      "duplicates": [
+        "luu-anh-locket-ve-dien-thoai-khong-vo-nhanh-nhat-va-chinh-hang"
+      ]
+    },
+    {
+      "keep": "tai-va-cai-dat-locket-android-khong-can-icloud-va-chinh-hang-2",
+      "duplicates": [
+        "tai-va-cai-dat-locket-android-khong-can-icloud-va-chinh-hang"
+      ]
+    },
+    {
+      "keep": "dung-locket-gold-qua-dns-co-bi-khoa-khong-moi-nhat-va-moi-nhat-2",
+      "duplicates": [
+        "dung-locket-gold-qua-dns-co-bi-khoa-khong-moi-nhat-va-moi-nhat"
+      ]
+    },
+    {
+      "keep": "tablet-android-dung-locket-mien-phi-va-khong-can-icloud-2",
+      "duplicates": [
+        "tablet-android-dung-locket-mien-phi-va-khong-can-icloud"
+      ]
+    },
+    {
+      "keep": "locket-khong-lam-moi-anh-moi-nhat-va-bao-hanh-2",
+      "duplicates": [
+        "locket-khong-lam-moi-anh-moi-nhat-va-bao-hanh"
+      ]
+    },
+    {
+      "keep": "locket-bao-loi-ket-noi-mang-no-internet-mien-phi-va-moi-nhat-2",
+      "duplicates": [
+        "locket-bao-loi-ket-noi-mang-no-internet-mien-phi-va-moi-nhat"
+      ]
+    },
+    {
+      "keep": "dien-thoai-android-locket-tot-gia-re-va-an-toan-2",
+      "duplicates": [
+        "dien-thoai-android-locket-tot-gia-re-va-an-toan"
+      ]
+    },
+    {
+      "keep": "them-nhac-vao-anh-locket-uy-tin-va-chinh-hang-2",
+      "duplicates": [
+        "them-nhac-vao-anh-locket-uy-tin-va-chinh-hang"
+      ]
+    },
+    {
+      "keep": "ket-ban-nhieu-nguoi-tren-locket-gia-re-va-gia-re-2",
+      "duplicates": [
+        "ket-ban-nhieu-nguoi-tren-locket-gia-re-va-gia-re"
+      ]
+    },
+    {
+      "keep": "mua-locket-gold-gia-bao-nhieu-nhanh-nhat-va-uy-tin-2",
+      "duplicates": [
+        "mua-locket-gold-gia-bao-nhieu-nhanh-nhat-va-uy-tin"
+      ]
+    }
+  ],
+  "source_duplicate_entries": 42,
+  "visible_articles": 2457
+}

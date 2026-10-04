@@ -6,13 +6,13 @@ export function postPurchaseState(order) {
     paid,
     completed,
     terminal: revoked || completed || ["failed", "cancelled"].includes(order.status),
-    showApkGuide: paid && order.platform === "Android",
+    showApkGuide: paid && !revoked && order.platform === "Android",
     showGoldGuide: completed && !revoked && order.platform === "iOS",
     message: order.expired_at ? "Đơn đã hết hạn thanh toán sau 10 phút. Vui lòng tạo đơn mới; nếu đã chuyển tiền, liên hệ hỗ trợ kèm mã đơn để đối soát." : revoked ? "Quyền Locket Gold của đơn này đã được hủy. Vui lòng liên hệ hỗ trợ kèm mã đơn nếu cần đối soát." : completed
       ? "✓ Đơn đã hoàn tất."
       : order.status === "paid"
         ? order.platform === "Android"
-          ? "✓ Thanh toán đã được xác nhận. Nhận tệp APK qua Zalo theo hướng dẫn bên dưới."
+          ? "✓ Thanh toán đã được xác nhận. Tải tệp APK và cài đặt theo hướng dẫn bên dưới."
           : "✓ SePay đã xác nhận thanh toán. Đang chờ hệ thống xác nhận nâng cấp Locket Gold…"
         : order.status === "failed"
           ? "Đơn chưa hoàn tất. Vui lòng liên hệ hỗ trợ kèm mã đơn."
@@ -22,21 +22,23 @@ export function postPurchaseState(order) {
   };
 }
 
-export function apkInstallationGuide() {
+export function apkInstallationGuide(order = {}) {
+  const downloadUrl = /^LG[A-Z0-9]{8}$/.test(order.code || "") ? `/api/orders/${order.code}/apk` : "";
   return `<section class="after-payment installation-guide" aria-labelledby="apk-guide-title">
     <strong>✓ Thanh toán đã được xác nhận</strong>
-    <h2 id="apk-guide-title">HƯỚNG DẪN CÀI LOCKET APK NHẬN QUA ZALO</h2>
+    <h2 id="apk-guide-title">HƯỚNG DẪN TẢI VÀ CÀI LOCKET APK</h2>
     <p>Khách chỉ cần làm từng bước dưới đây.</p>
-    <section><h3>🟢 BƯỚC 1: NHẬN VÀ TẢI TỆP APK QUA ZALO</h3>
-      <p>Mở Zalo và liên hệ hỗ trợ kèm mã đơn thanh toán trên trang web. Tệp Locket APK sẽ được gửi trong Zalo sau khi thanh toán được xác nhận.</p>
-      <p>Mở tin nhắn chứa tệp Locket APK, nhấn Tải xuống và chờ tệp tải hoàn tất. Nếu được gửi đường dẫn tải, mở bằng trình duyệt trên điện thoại, ví dụ Chrome hoặc Cốc Cốc, rồi nhấn Tải APK.</p>
-      <a class="button button--small" data-apk-zalo href="/lien-he/">Liên hệ Zalo để nhận tệp APK ↗</a>
+    <section><h3>🟢 BƯỚC 1: TẢI TỆP APK</h3>
+      <p>Nhấn nút bên dưới để tải LocketGold.website.apk (khoảng 148 MB). Chờ tệp tải hoàn tất trước khi cài đặt.</p>
+      ${downloadUrl ? `<a class="button" data-apk-download href="${downloadUrl}" download="LocketGold.website.apk">Tải Locket APK ↓</a>` : ""}
+      <p>Nếu tải bằng trình duyệt trong ứng dụng gặp lỗi, hãy mở trang đơn này bằng Chrome hoặc Cốc Cốc để tải lại.</p>
+      <a class="button button--small button--outline" data-apk-zalo href="/lien-he/">Liên hệ Zalo nếu cần hỗ trợ ↗</a>
     </section>
     <section><h3>🟢 BƯỚC 2: MỞ TỆP APK</h3>
       <p>Sau khi tải xong, mở thông báo tải xuống hoặc vào Tệp / Quản lý tệp → Tải xuống.</p>
       <p>Tìm tệp APK vừa tải và nhấn vào tệp.</p>
       <p>Điện thoại có thể hiện thông báo: ⚠️ Không được phép cài đặt ứng dụng từ nguồn này.</p>
-      <p>Đây là cảnh báo bảo mật của Android khi cài APK ngoài Google Play. Chỉ tiếp tục với tệp do hỗ trợ gửi cho đơn của bạn.</p>
+      <p>Đây là cảnh báo bảo mật của Android khi cài APK ngoài Google Play. Sử dụng tệp vừa tải từ trang đơn của bạn.</p>
     </section>
     <section><h3>🟢 BƯỚC 3: CHO PHÉP CÀI APK TỪ ỨNG DỤNG MỞ TỆP</h3>
       <p>Nếu xuất hiện nút Cài đặt hoặc Cài đặt ứng dụng không xác định:</p>
@@ -49,12 +51,12 @@ export function apkInstallationGuide() {
     </section>
     <section><h3>🟢 BƯỚC 5: NẾU KHÔNG TÌM THẤY TỆP APK</h3>
       <p>Nếu đã tải tệp nhưng không biết tệp nằm ở đâu:</p>
-      <p><b>Cách 1:</b> Mở lại tin nhắn Zalo chứa tệp APK. Nếu tải bằng trình duyệt, mở trình duyệt → Tải xuống → tìm tệp APK vừa tải.</p>
+      <p><b>Cách 1:</b> Mở trình duyệt → Tải xuống → tìm tệp LocketGold.website.apk vừa tải.</p>
       <p><b>Cách 2:</b> Mở ứng dụng Quản lý tệp / Tệp của tôi → Tải xuống → tìm tệp có đuôi .apk.</p>
     </section>
     <section><h3>🔴 NẾU HIỆN “ỨNG DỤNG CHƯA ĐƯỢC CÀI ĐẶT”</h3>
       <p>Bạn thử lần lượt:</p>
-      <ul><li>Kiểm tra điện thoại còn dung lượng trống không.</li><li>Xóa phiên bản Locket cũ nếu phiên bản APK yêu cầu thay thế.</li><li>Tải lại tệp APK được gửi trong Zalo hoặc đường dẫn hỗ trợ gửi.</li><li>Kiểm tra tệp APK đã tải đầy đủ chưa.</li><li>Khởi động lại điện thoại.</li><li>Thử cài đặt lại.</li></ul>
+      <ul><li>Kiểm tra điện thoại còn dung lượng trống không.</li><li>Xóa phiên bản Locket cũ nếu phiên bản APK yêu cầu thay thế.</li><li>Quay lại trang đơn và nhấn Tải Locket APK để tải lại.</li><li>Kiểm tra tệp APK đã tải đầy đủ chưa.</li><li>Khởi động lại điện thoại.</li><li>Thử cài đặt lại.</li></ul>
     </section>
   </section>`;
 }
