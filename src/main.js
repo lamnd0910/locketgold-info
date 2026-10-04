@@ -10,6 +10,7 @@ import { addProviderKeyForm } from "./admin-provider-key.js";
 import { initPostImages } from "./admin-post-images.js";
 import { renderPostContent } from "./post-content.js";
 import { mergePostArchive, postArchivePage } from "./post-archive.js";
+import { postForDisplay } from "./post-brand.js";
 import { mountPaymentDeadline } from "./payment-deadline.js";
 import { addAdminAccount } from "./admin-account.js";
 import { addAdminWelcome } from "./admin-welcome.js";
@@ -199,7 +200,8 @@ function postCards(posts) {
     "kiem-tra-sau-nang-cap": "/images/noapp.png",
     "chon-goi-phu-hop": "/images/logo.png",
   };
-  return posts.map((post) => {
+  return posts.map((rawPost) => {
+    const post = postForDisplay(rawPost);
     const href = `/bai-viet/?bai=${encodeURIComponent(post.slug || "")}`;
     const image = /^\/images\/imported-posts\/[a-f0-9]{24}\.(png|jpe?g|webp|gif)$/.test(post.thumbnail || "") ? post.thumbnail : images[post.slug] || "/images/logo.png";
     return `<article class="post-card"><a class="post-card-image" href="${href}" aria-label="${escapeHtml(post.title)}"><img src="${image}" alt="${escapeHtml(post.title)}" width="1536" height="1024" loading="lazy" decoding="async"></a><span>${escapeHtml(formatDate(post.published_at))}</span><h2><a href="${href}">${escapeHtml(post.title)}</a></h2><p>${escapeHtml(post.excerpt || "")}</p><a href="${href}">Đọc bài →</a></article>`;
@@ -359,7 +361,8 @@ async function loadPosts() {
   if (!list) return;
   const slug = new URLSearchParams(location.search).get("bai");
   const localPost = fallbackPosts.find((post) => post.slug === slug);
-  const renderPost = (post) => {
+  const renderPost = (rawPost) => {
+    const post = postForDisplay(rawPost);
     list.className = "article-view";
     const cover = /^\/images\/imported-posts\/[a-f0-9]{24}\.(png|jpe?g|webp|gif)$/.test(post.cover || "") ? `<img class="article-cover" src="${escapeHtml(post.cover)}" alt="${escapeHtml(post.title)}" decoding="async">` : "";
     list.innerHTML = `<article><a class="text-link" href="/bai-viet/">← Tất cả bài viết</a><span>${escapeHtml(formatDate(post.published_at))}${post.category ? ` · ${escapeHtml(post.category)}` : ""}</span><h2>${escapeHtml(post.title)}</h2>${cover}<p class="article-lead">${escapeHtml(post.excerpt)}</p><div class="article-body">${renderPostContent(post.content, post.content_blocks)}</div></article>`;

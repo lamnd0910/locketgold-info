@@ -1,10 +1,12 @@
+import { postText } from "./post-brand.js";
+
 export function mergePostArchive(existing = [], imported = []) {
   const posts = new Map();
   const titles = new Set();
   for (const post of [...existing, ...imported]) {
     if (!post?.slug) continue;
     const slug = post.duplicate_of || post.slug;
-    const title = String(post.title || "").normalize("NFKC").toLocaleLowerCase("vi-VN").replace(/\s+/g, " ").trim();
+    const title = postText(post.title).normalize("NFKC").toLocaleLowerCase("vi-VN").replace(/\s+/g, " ").trim();
     if (posts.has(slug) || (title && titles.has(title))) continue;
     posts.set(slug, post);
     if (title) titles.add(title);

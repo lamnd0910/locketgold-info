@@ -1,4 +1,5 @@
-const escape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+import { postText } from "./post-brand.js";
+const escape = (value) => postText(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const importedTags = new Set(["p", "h2", "h3", "h4", "h5", "h6", "strong", "b", "em", "i", "u", "s", "ul", "ol", "li", "blockquote", "br", "hr", "a", "img", "figure", "figcaption", "table", "thead", "tbody", "tr", "th", "td", "pre", "code", "div", "span"]);
 const safeHref = (value) => /^(https?:\/\/|mailto:|tel:|\/bai-viet\/\?bai=)/i.test(value || "") && !/[\u0000-\u0020]/.test(value);
