@@ -322,6 +322,13 @@ h1, h2, h3, p { margin-top: 0; }
 .bank-box strong { font-size: 1.2rem; }
 .after-payment { display: block; margin-top: 15px; padding: 18px; color: #126d56; background: #e7faf4; border-radius: 13px; }
 .after-payment p { font-size: .72rem; line-height: 1.6; }
+.installation-guide { color: var(--ink); overflow-wrap: anywhere; }
+.installation-guide section { margin-top: 24px; padding-top: 20px; border-top: 1px solid #126d5626; }
+.installation-guide h2 { font-size: 1.2rem; line-height: 1.4; }
+.installation-guide h3 { font-size: 1rem; line-height: 1.5; }
+.installation-guide ol, .installation-guide ul { padding-left: 22px; font-size: .85rem; line-height: 1.7; }
+.installation-guide li + li { margin-top: 6px; }
+.installation-guide .button { max-width: 100%; white-space: normal; text-align: center; }
 
 .portal-wrap { min-height: 420px; }
 .portal-dashboard { display: grid; gap: 22px; }

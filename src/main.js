@@ -1,6 +1,7 @@
 import "./styles.css";
 import { normalizeUsername, parsePastedUsername } from "./username.js";
 import { DEFAULT_PLANS as fallbackPlans } from "./plans.js";
+import { postPurchaseState, apkInstallationGuide, goldCompletionGuide } from "./post-purchase.js";
 
 const defaultDnsUrl = "https://ctv.nodns.vn/cai-dns";
 
@@ -129,7 +130,7 @@ const pages = {
   <section class="section section--tint"><div class="container two-col"><div><span class="eyebrow">Quy trình</span><h2>Bốn bước rõ ràng</h2><p>Không cần tạo tài khoản khách hàng. Bước xác nhận chỉ giúp bạn tự kiểm tra Username đã nhập, chưa phải tra cứu tài khoản Locket.</p></div><ol class="step-list"><li><b>01</b><div><strong>Nhập thông tin</strong><span>Nhập Username và kênh liên hệ; không nhập mật khẩu hay OTP.</span></div></li><li><b>02</b><div><strong>Tự xác nhận</strong><span>Kiểm tra lại Username trước khi tạo đơn.</span></div></li><li><b>03</b><div><strong>Chọn gói</strong><span>Kiểm tra nền tảng, thời hạn và số tiền.</span></div></li><li><b>04</b><div><strong>Thanh toán & theo dõi</strong><span>Nhận mã đơn và hướng dẫn sau khi tạo đơn.</span></div></li></ol></div></section>
   <section class="section"><div class="container"><div class="section-heading"><span class="eyebrow">Tin mới</span><h2>Mẹo dùng Locket an toàn</h2></div><div class="post-grid">${postCards(fallbackPosts)}</div><div class="center"><a class="text-link" href="/bai-viet/">Xem tất cả bài viết →</a></div></div></section>`),
 
-  pricing: () => publicShell(`${pageHero("Lên Gold", "Chọn gói phù hợp", "Bốn gói cho iOS và Android, mua trực tiếp mà không cần đăng nhập.")}<section class="section section--compact"><div class="container"><div id="all-plans">${planCards()}</div><p class="info-note">ⓘ Gói Android sẽ mở nút tải APK sau khi quản trị viên tải tệp hoặc cấu hình đường dẫn.</p><section class="pricing-video" aria-labelledby="gold-video-title"><span class="eyebrow">Hướng dẫn Locket Gold</span><h2 id="gold-video-title">Video hướng dẫn</h2><div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/JEEMLXXIrvE?start=72" title="Video hướng dẫn Locket Gold" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><a class="text-link" href="https://www.youtube.com/watch?v=JEEMLXXIrvE&t=72s" target="_blank" rel="noopener noreferrer">Mở video trên YouTube ↗</a></section></div></section>`),
+  pricing: () => publicShell(`${pageHero("Lên Gold", "Chọn gói phù hợp", "Bốn gói cho iOS và Android, mua trực tiếp mà không cần đăng nhập.")}<section class="section section--compact"><div class="container"><div id="all-plans">${planCards()}</div><p class="info-note">ⓘ Gói Android: file APK được gửi qua Zalo sau khi thanh toán. Hướng dẫn cài đặt sẽ hiện trên trang đơn.</p><section class="pricing-video" aria-labelledby="gold-video-title"><span class="eyebrow">Hướng dẫn Locket Gold</span><h2 id="gold-video-title">Video hướng dẫn</h2><div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/JEEMLXXIrvE?start=72" title="Video hướng dẫn Locket Gold" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><a class="text-link" href="https://www.youtube.com/watch?v=JEEMLXXIrvE&t=72s" target="_blank" rel="noopener noreferrer">Mở video trên YouTube ↗</a></section></div></section>`),
 
   trust: () => publicShell(`${pageHero("Uy tín & feedback", "Trải nghiệm từ khách hàng", "Khám phá hình ảnh phản hồi và những cam kết khi đặt gói tại Locket Gold.")}${feedbackGallery()}<section class="section section--compact"><div class="container"><div class="trust-grid">
     <article><span>🔒</span><h2>Không thu mật khẩu</h2><p>Biểu mẫu chỉ nhận Username Locket và thông tin liên hệ bạn chủ động cung cấp.</p></article>
@@ -152,7 +153,7 @@ const pages = {
       <section id="guide-panel-3" class="guide-slide" role="tabpanel" aria-labelledby="guide-tab-3" tabindex="0" data-guide-panel="2" hidden><div><span class="eyebrow">Bước 3 / 4</span><h2>Chọn nền tảng và thời hạn</h2><p>Chọn đúng gói iOS hoặc Android, xem thời hạn và giá tạm tính. Nếu có mã giảm giá, áp dụng trước khi sang bước rà soát đơn.</p><p>Ở bước cuối, kiểm tra lại Username, gói và số tiền trước khi bấm tạo đơn.</p><a class="button button--outline button--small" href="/len-gold/">Xem bảng giá →</a></div><figure class="guide-illustration"><a href="/images/buoc3.png" target="_blank" rel="noopener noreferrer" aria-label="Xem ảnh hướng dẫn bước 3 ở kích thước đầy đủ"><img class="guide-slide-image" src="/images/buoc3.png" alt="Minh họa bước 3: thanh toán bằng VietQR" width="921" height="1152" loading="lazy" decoding="async"></a><figcaption>Ảnh minh họa · Bấm để xem ảnh lớn.</figcaption></figure></section>
       <section id="guide-panel-4" class="guide-slide" role="tabpanel" aria-labelledby="guide-tab-4" tabindex="0" data-guide-panel="3" hidden><div><span class="eyebrow">Bước 4 / 4</span><h2>Tạo đơn, rồi mới chuyển khoản</h2><p>Sau khi tạo đơn thành công, website mới hiển thị ngân hàng, số tiền, mã đơn và nội dung chuyển khoản của đơn đó. Chuyển đúng thông tin đang hiển thị trên trang đơn.</p><p>Giữ trang đơn để bấm <b>Kiểm tra thanh toán</b>. Nếu cần hỗ trợ, gửi mã đơn — không gửi mật khẩu hay OTP.</p></div><figure class="guide-illustration"><a href="/images/buoc4.png" target="_blank" rel="noopener noreferrer" aria-label="Xem ảnh hướng dẫn bước 4 ở kích thước đầy đủ"><img class="guide-slide-image" src="/images/buoc4.png" alt="Minh họa bước 4: kiểm tra Locket Gold sau kích hoạt" width="1195" height="896" loading="lazy" decoding="async"></a><figcaption>Ảnh minh họa · Bấm để xem ảnh lớn.</figcaption></figure></section>
     </div><div class="guide-controls"><button class="button button--outline button--small" type="button" data-guide-previous disabled>← Bước trước</button><span id="guide-position" aria-live="polite">Bước 1 / 4</span><button class="button button--small" type="button" data-guide-next>Bước tiếp →</button></div></div>
-    <div class="guide-extra"><article><h2>Dùng iPhone?</h2><p>Một số gói cần hướng dẫn DNS riêng. Chỉ tải từ liên kết trên website và đọc kỹ các bước cài đặt.</p><a class="text-link" href="/tai-dns/">Xem hướng dẫn DNS →</a></article><article><h2>Dùng Android?</h2><p>Chỉ tải APK từ nút chính thức khi quản trị viên đã cấu hình. Không tải file từ nguồn lạ.</p><a id="apk-download" class="button button--outline button--small is-disabled" href="#" aria-disabled="true">APK chưa được cung cấp</a></article></div>
+    <div class="guide-extra"><article><h2>Dùng iPhone?</h2><p>Một số gói cần hướng dẫn DNS riêng. Chỉ tải từ liên kết trên website và đọc kỹ các bước cài đặt.</p><a class="text-link" href="/tai-dns/">Xem hướng dẫn DNS →</a></article><article><h2>Dùng Android?</h2><p>File APK được gửi qua Zalo sau khi thanh toán. Hướng dẫn nhận file và cài đặt sẽ hiện trên trang đơn khi giao dịch được xác nhận.</p><a class="text-link" href="/len-gold/">Xem gói Android →</a></article></div>
     <section class="guide-faq" aria-labelledby="guide-faq-title"><div class="section-heading"><span class="eyebrow">Câu hỏi thường gặp</span><h2 id="guide-faq-title">Bạn cần biết trước khi mua</h2></div><div class="guide-faq-list">
       <details><summary>Có cần đưa mật khẩu hoặc OTP không?</summary><p>Không. Biểu mẫu đặt gói chỉ nhận Username Locket và thông tin liên hệ hỗ trợ. Nếu ai yêu cầu mật khẩu hoặc OTP, hãy dừng lại.</p></details>
       <details><summary>Trang có xác minh tài khoản Locket của tôi không?</summary><p>Chưa. Bước xác nhận chỉ hiển thị lại Username bạn đã nhập để bạn tự đối chiếu trong ứng dụng Locket; trang không tra cứu avatar hoặc trạng thái Gold.</p></details>
@@ -370,7 +371,6 @@ async function loadDownloads() {
     const config = await api("/api/public-config");
     if (config.dns_url) enableDownload("#dns-download", config.dns_url, "Mở hướng dẫn cài DNS ↗");
     if (config.dns_url && document.querySelector("#dns-url")) document.querySelector("#dns-url").textContent = config.dns_url;
-    if (config.apk_url) enableDownload("#apk-download", config.apk_url, "Tải APK Android");
     const contact = document.querySelector("#contact-links");
     if (contact) {
       const cards = [];
@@ -617,24 +617,86 @@ function initCheckout() {
   });
 }
 
+let paymentPollTimer;
+let activePaymentCode;
+let paymentCheckRunning = false;
+let paymentGuideShown = "";
+let paymentFinished = false;
+
+function schedulePaymentCheck() {
+  window.clearTimeout(paymentPollTimer);
+  if (activePaymentCode && !paymentFinished) {
+    paymentPollTimer = window.setTimeout(() => checkOrder(activePaymentCode), 5000);
+  }
+}
+
+window.addEventListener("pagehide", () => window.clearTimeout(paymentPollTimer));
+document.addEventListener("visibilitychange", () => {
+  if (!activePaymentCode || paymentFinished) return;
+  if (document.hidden) window.clearTimeout(paymentPollTimer);
+  else checkOrder(activePaymentCode);
+});
+
 function showPayment(order) {
+  window.clearTimeout(paymentPollTimer);
+  activePaymentCode = order.code;
+  paymentGuideShown = "";
+  paymentFinished = false;
   const result = document.querySelector("#payment-result");
   result.hidden = false;
   const qrUrl = /^[0-9]{6,10}$/.test(String(order.bank_bin || "")) && /^[0-9]{6,20}$/.test(String(order.bank_account || ""))
     ? `https://img.vietqr.io/image/${encodeURIComponent(order.bank_bin)}-${encodeURIComponent(order.bank_account)}-compact2.png?amount=${encodeURIComponent(order.amount)}&addInfo=${encodeURIComponent(order.transfer_content)}&accountName=${encodeURIComponent(order.account_name || "")}`
     : "";
-  result.innerHTML = `<div><span class="eyebrow">Mã đơn ${escapeHtml(order.code)}</span><h2>Chuyển khoản đúng nội dung</h2><div class="bank-box"><p>${escapeHtml(order.bank_name || "Ngân hàng sẽ được cấu hình")}</p><strong>${escapeHtml(order.bank_account || "—")}</strong><span>${escapeHtml(order.account_name || "")}</span></div>${qrUrl ? `<div class="payment-qr"><img src="${qrUrl}" alt="Mã QR thanh toán đơn ${escapeHtml(order.code)}" loading="lazy"><small>Quét mã để điền sẵn số tiền và nội dung chuyển khoản. Kiểm tra đúng tên người nhận trước khi xác nhận.</small></div>` : ""}<dl><div><dt>Số tiền</dt><dd>${money(order.amount)}</dd></div><div><dt>Nội dung</dt><dd><code>${escapeHtml(order.transfer_content)}</code></dd></div></dl><button class="button button--outline" id="check-order" type="button">Kiểm tra thanh toán</button><p id="order-status" class="form-message">Hệ thống chỉ mở hướng dẫn sau khi giao dịch được xác nhận.</p></div>`;
+  result.innerHTML = `<div><span class="eyebrow">Mã đơn ${escapeHtml(order.code)}</span><h2>Chuyển khoản đúng nội dung</h2><div class="bank-box"><p>${escapeHtml(order.bank_name || "Ngân hàng sẽ được cấu hình")}</p><strong>${escapeHtml(order.bank_account || "—")}</strong><span>${escapeHtml(order.account_name || "")}</span></div>${qrUrl ? `<div class="payment-qr"><img src="${qrUrl}" alt="Mã QR thanh toán đơn ${escapeHtml(order.code)}" loading="lazy"><small>Quét mã để điền sẵn số tiền và nội dung chuyển khoản. Kiểm tra đúng tên người nhận trước khi xác nhận.</small></div>` : ""}<dl><div><dt>Số tiền</dt><dd>${money(order.amount)}</dd></div><div><dt>Nội dung</dt><dd><code>${escapeHtml(order.transfer_content)}</code></dd></div></dl><button class="button button--outline" id="check-order" type="button">Kiểm tra thanh toán</button><p id="order-status" class="form-message" role="status" aria-live="polite">Đang chờ SePay xác nhận thanh toán. Trang sẽ tự cập nhật…</p><div id="post-payment-guide" hidden></div></div>`;
   document.querySelector("#check-order").addEventListener("click", () => checkOrder(order.code));
+  schedulePaymentCheck();
 }
 
 async function checkOrder(code) {
   const status = document.querySelector("#order-status");
+  if (!status || paymentCheckRunning || code !== activePaymentCode) return;
+  window.clearTimeout(paymentPollTimer);
+  if (document.hidden) return;
+  paymentCheckRunning = true;
+  const button = document.querySelector("#check-order");
+  button.disabled = true;
   try {
     const order = await api(`/api/orders/${encodeURIComponent(code)}`);
-    if (order.status !== "paid" && order.status !== "completed") { status.textContent = "Chưa nhận được thanh toán. Vui lòng kiểm tra lại sau ít phút."; return; }
-    status.className = "after-payment";
-    status.innerHTML = `<strong>✓ Thanh toán đã được xác nhận</strong><p>Mở Locket, đăng xuất rồi đăng nhập lại nếu trạng thái Gold chưa cập nhật. Xem video hướng dẫn đoạn 1:12–1:59.</p><a class="button button--small" href="https://www.youtube.com/watch?v=JEEMLXXIrvE&t=72s" target="_blank" rel="noopener noreferrer">Xem hướng dẫn ↗</a>`;
-  } catch (error) { status.textContent = error.message; }
+    if (code !== activePaymentCode) return;
+    const state = postPurchaseState(order);
+    paymentFinished = state.terminal;
+    status.textContent = state.message;
+    status.className = `form-message${state.paid ? " is-success" : ""}`;
+    const guide = document.querySelector("#post-payment-guide");
+    const guideType = state.showApkGuide ? "apk" : state.showGoldGuide ? "gold" : "";
+    if (guideType && guideType !== paymentGuideShown) {
+      guide.innerHTML = guideType === "apk" ? apkInstallationGuide() : goldCompletionGuide();
+      guide.hidden = false;
+      paymentGuideShown = guideType;
+      guide.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (guideType === "apk") {
+        api("/api/public-config").then((config) => {
+          const link = guide.querySelector("[data-apk-zalo]");
+          if (link && config.support_zalo && /^https:\/\//i.test(config.support_zalo)) {
+            link.href = config.support_zalo;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+          }
+        }).catch(() => {});
+      }
+    } else if (!guideType) {
+      guide.hidden = true;
+      guide.replaceChildren();
+      paymentGuideShown = "";
+    }
+  } catch (error) {
+    status.textContent = `${error.message} Trang sẽ thử kiểm tra lại; bạn cũng có thể bấm Kiểm tra thanh toán.`;
+  } finally {
+    paymentCheckRunning = false;
+    button.disabled = false;
+    button.hidden = paymentFinished;
+    if (!document.hidden) schedulePaymentCheck();
+  }
 }
 
 function initCtv() {

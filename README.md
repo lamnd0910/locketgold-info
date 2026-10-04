@@ -22,6 +22,10 @@ Giá mặc định dùng chung cho giao diện và API nằm trong `src/plans.js
 
 Trang `/thanh-toan/` có bốn bước: nhập thông tin, tự xác nhận Username, chọn gói và rà soát trước khi tạo đơn. Bước xác nhận chỉ hiển thị lại dữ liệu khách đã nhập; website chưa có API tra cứu tài khoản Locket nên không xác minh avatar hoặc trạng thái Gold.
 
+Sau khi tạo đơn, trang tự kiểm tra trạng thái mỗi 5 giây và tạm dừng khi tab bị ẩn. Gói Android mở hướng dẫn nhận APK qua Zalo và cài đặt khi SePay xác nhận thanh toán. Gói iOS chỉ mở hướng dẫn lên Gold khi API nâng cấp xác nhận hoàn tất; HTTP 200 hoặc phản hồi đang xử lý chưa được tính là hoàn tất.
+
+Hợp đồng phản hồi nâng cấp hiện hỗ trợ JSON `{"status":"completed"}` hoặc `{"completed":true}`. Cần đối chiếu mẫu phản hồi thực tế của nhà cung cấp và chỉnh `worker/activation.js` trước khi kết nối API khác. API xử lý bất đồng bộ cần tích hợp thêm webhook hoặc tra cứu trạng thái theo tài liệu nhà cung cấp để chuyển đơn từ `paid` sang `completed`. Nội dung hướng dẫn sau mua nằm trong `src/post-purchase.js`; ảnh và nguyên văn hướng dẫn hoàn tất cần được cung cấp để thay nội dung iOS hiện tại.
+
 Trang `/huong-dan/` có bộ 4 bước tương tác và FAQ. Nội dung chuyển khoản luôn dẫn khách xem thông tin trên đơn thực tế, không hiển thị QR hoặc số tài khoản cố định từ ảnh minh họa.
 
 ## Khởi tạo Cloudflare D1

@@ -115,6 +115,11 @@ function paymentDb() {
             state.transactionIds.add(id);
             return { meta: { changes: 1 } };
           }
+          if (sql.startsWith("UPDATE orders SET status = 'completed'")) {
+            if (state.order.status !== "paid") return { meta: { changes: 0 } };
+            state.order.status = "completed";
+            return { meta: { changes: 1 } };
+          }
           assert.match(sql, /^UPDATE orders SET status = 'paid'/);
           if (state.order.status !== "pending") return { meta: { changes: 0 } };
           state.order.status = "paid";
@@ -153,4 +158,30 @@ test("an underpaid webhook does not schedule activation", async () => {
   assert.equal(response.status, 200);
   assert.equal(db.state.order.status, "pending");
   assert.equal(scheduled.length, 0);
+});
+
+test("SePay plus upstream acceptance still leaves an order awaiting activation", async (t) => {
+  const db = paymentDb();
+  const scheduled = [];
+  t.mock.method(globalThis, "fetch", async () => Response.json({ success: true, status: "processing" }));
+  const response = await worker.fetch(webhookRequest("queued-upgrade"), {
+    DB: db, SEPAY_WEBHOOK_API_KEY: "test-secret",
+    UPSTREAM_API_URL: "https://activation.example/api", UPSTREAM_API_KEY: "test-upstream-key",
+  }, { waitUntil(promise) { scheduled.push(promise); } });
+  assert.equal(response.status, 200);
+  await Promise.all(scheduled);
+  assert.equal(db.state.order.status, "paid");
+});
+
+test("SePay plus explicit upstream completion completes the order", async (t) => {
+  const db = paymentDb();
+  const scheduled = [];
+  t.mock.method(globalThis, "fetch", async () => Response.json({ status: "completed" }));
+  const response = await worker.fetch(webhookRequest("completed-upgrade"), {
+    DB: db, SEPAY_WEBHOOK_API_KEY: "test-secret",
+    UPSTREAM_API_URL: "https://activation.example/api", UPSTREAM_API_KEY: "test-upstream-key",
+  }, { waitUntil(promise) { scheduled.push(promise); } });
+  assert.equal(response.status, 200);
+  await Promise.all(scheduled);
+  assert.equal(db.state.order.status, "completed");
 });

@@ -1,5 +1,6 @@
 import { normalizeUsername } from "../src/username.js";
 import { DEFAULT_PLANS } from "../src/plans.js";
+import { activationConfirmed } from "./activation.js";
 
 const loginAttempts = new Map();
 const encoder = new TextEncoder();
@@ -129,7 +130,7 @@ async function createOrder(request, env) {
 async function getOrder(env, code) {
   requireDb(env);
   if (!/^LG[A-Z0-9]{8}$/.test(code)) throw httpError(400, "Mã đơn không hợp lệ.");
-  const order = await env.DB.prepare("SELECT code, plan_name, amount, status, created_at, paid_at FROM orders WHERE code = ?").bind(code).first();
+  const order = await env.DB.prepare("SELECT code, plan_name, platform, amount, status, created_at, paid_at, completed_at FROM orders WHERE code = ?").bind(code).first();
   if (!order) throw httpError(404, "Không tìm thấy đơn.");
   return json(order);
 }
@@ -166,7 +167,9 @@ async function activateOrder(env, order) {
   try {
     const response = await fetch(apiUrl, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.UPSTREAM_API_KEY}` }, body: JSON.stringify({ order_code: order.code, username: order.username, plan_id: order.plan_id, platform: order.platform }) });
     if (!response.ok) throw new Error(`Upstream ${response.status}`);
-    await env.DB.prepare("UPDATE orders SET status = 'completed', completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE code = ?").bind(order.code).run();
+    const result = await response.json();
+    if (!activationConfirmed(result)) return;
+    await env.DB.prepare("UPDATE orders SET status = 'completed', completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE code = ? AND status = 'paid'").bind(order.code).run();
   } catch (error) { console.error("Activation failed", order.code, error); }
 }
 
