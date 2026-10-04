@@ -1,6 +1,7 @@
 import { normalizeUsername } from "../src/username.js";
 import { DEFAULT_PLANS } from "../src/plans.js";
 import { activationConfirmed } from "./activation.js";
+import { providerRequest, unwrap, grantPayload, remoteCookie, remoteLogin, clearRemoteCookie, publicCtv, portalOrders } from "./nodns.js";
 
 const loginAttempts = new Map();
 const encoder = new TextEncoder();
@@ -25,6 +26,16 @@ export default {
 
 async function route(request, env, ctx, url) {
   const { pathname } = url;
+  if (pathname === "/api/locket/userinfo" && request.method === "GET") {
+    rateLimit(request, "lookup", 30, 60_000);
+    const username = normalizeUsername(url.searchParams.get("user"));
+    if (!username) throw httpError(400, "Username không hợp lệ.");
+    const { result } = await providerRequest(env, `/api/v1/userinfo?user=${encodeURIComponent(username)}`);
+    const data = unwrap(result);
+    if (!data.uid) throw httpError(404, "Không tìm thấy tài khoản Locket.");
+    return json({ username: data.username || username, uid: data.uid, full_name: data.full_name || data.fullName || "", avatar: cleanUrl(data.profile_picture_url || data.avatar), gold: { has_gold: data.gold?.has_gold === true, expiry_date: data.gold?.expiry_date || null } });
+  }
+  if (env.NODNS_CTV_PORTAL === "true" && pathname.startsWith("/api/ctv/")) return remoteCtvRoute(request, env, pathname);
   if (pathname === "/api/plans" && request.method === "GET") return getPlans(env);
   if (pathname === "/api/posts" && request.method === "GET") return getPosts(env);
   if (pathname.startsWith("/api/posts/") && request.method === "GET") return getPost(env, decodeURIComponent(pathname.slice(11)));
@@ -39,6 +50,16 @@ async function route(request, env, ctx, url) {
   if (pathname === "/api/admin/logout" && request.method === "POST") return logout("lg_admin");
   if (pathname === "/api/admin/session" && request.method === "GET") { await requireSession(request, env, "admin"); return json({ authenticated: true }); }
   if (pathname === "/api/admin/overview" && request.method === "GET") return adminOverview(request, env);
+  if (pathname === "/api/admin/provider" && request.method === "GET") {
+    await requireSession(request, env, "admin");
+    const [{ result: account }, { result: history }] = await Promise.all([
+      providerRequest(env, "/api/v1/me", { apiKey: true }),
+      providerRequest(env, "/api/v1/orders?limit=100", { apiKey: true }),
+    ]);
+    const data = unwrap(account);
+    const rows = unwrap(history);
+    return json({ account: { username: data.username, remaining: Number(data.remaining || 0), total: Number(data.total || 0), used: Number(data.used || 0), active: data.active === true }, orders: (Array.isArray(rows) ? rows : rows.orders || []).map((order) => ({ username: order.displayName || order.username || order.uid, status: order.state || (order.has_gold ? "active" : "pending"), expiresAt: order.expiresAt || null })) });
+  }
   if (pathname === "/api/admin/orders" && request.method === "GET") return adminOrders(request, env);
   if (pathname === "/api/admin/posts" && request.method === "POST") return adminCreatePost(request, env);
   if (pathname === "/api/admin/promos" && request.method === "POST") return adminCreatePromo(request, env);
@@ -81,8 +102,15 @@ async function getPost(env, slug) {
 
 async function getPublicConfig(env) {
   const settings = await readSettings(env, ["dns_url", "apk_url", "support_email", "support_zalo", "support_facebook", "support_telegram"]);
+  let profileUrl = "";
+  if (!settings.dns_url && !env.DNS_DOWNLOAD_URL && env.NODNS_API_KEY) {
+    try {
+      const { result } = await providerRequest(env, "/api/v1/profile", { apiKey: true });
+      profileUrl = cleanUrl(unwrap(result).profile_url);
+    } catch { /* Keep the configured default download when NoDNS is unavailable. */ }
+  }
   return json({
-    dns_url: settings.dns_url || env.DNS_DOWNLOAD_URL || "https://ctv.nodns.vn/cai-dns",
+    dns_url: settings.dns_url || env.DNS_DOWNLOAD_URL || profileUrl || "https://ctv.nodns.vn/cai-dns",
     apk_url: settings.apk_url || env.ANDROID_APK_URL || "",
     support_email: settings.support_email || env.SUPPORT_EMAIL || "",
     support_zalo: settings.support_zalo || env.SUPPORT_ZALO_URL || "",
@@ -161,6 +189,16 @@ async function sepayWebhook(request, env, ctx) {
 }
 
 async function activateOrder(env, order) {
+  if (env.NODNS_API_KEY) {
+    const body = grantPayload(order);
+    if (!body) return;
+    try {
+      const { result } = await providerRequest(env, "/api/v1/grant", { method: "POST", body, apiKey: true });
+      if (result.status !== "success" || unwrap(result).active !== true) return;
+      await env.DB.prepare("UPDATE orders SET status = 'completed', completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE code = ? AND status = 'paid'").bind(order.code).run();
+    } catch (error) { console.error("NoDNS activation failed", order.code, error.status); }
+    return;
+  }
   const settings = await readSettings(env, ["upstream_api_url"]);
   const apiUrl = settings.upstream_api_url || env.UPSTREAM_API_URL;
   if (!apiUrl || !env.UPSTREAM_API_KEY) return;
@@ -175,6 +213,13 @@ async function activateOrder(env, order) {
 
 async function adminLogin(request, env) {
   rateLimit(request, "admin-login", 6, 15 * 60_000);
+  if (env.NODNS_ADMIN_AUTH === "true") {
+    const body = await readJson(request);
+    if (!body.username || !body.password) throw httpError(400, "Nhập tên đăng nhập và mật khẩu.");
+    const cookie = await remoteLogin(request, env, "admin", { username: body.username, password: body.password });
+    const token = await signSession({ role: "admin", sub: "nodns-admin", exp: Date.now() + 8 * 60 * 60_000 }, env.SESSION_SECRET);
+    return withCookie(withCookie(json({ authenticated: true }), cookie), `lg_admin=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=28800`);
+  }
   if (!env.ADMIN_PASSWORD_SHA256 || !env.SESSION_SECRET) throw httpError(503, "Tài khoản quản trị chưa được cấu hình.");
   const { password } = await readJson(request);
   const digest = await sha256Hex(String(password || ""));
@@ -185,14 +230,15 @@ async function adminLogin(request, env) {
 
 async function adminOverview(request, env) {
   await requireSession(request, env, "admin");
-  requireDb(env);
+  const integration = { database: Boolean(env.DB), remote_ctv: env.NODNS_CTV_PORTAL === "true", nodns_key: Boolean(env.NODNS_API_KEY), remote_admin: env.NODNS_ADMIN_AUTH === "true" };
+  if (!env.DB) return json({ orders: 0, paid_orders: 0, ctv_users: 0, posts: 0, integration });
   const [orders, paid, ctv, posts] = await Promise.all([
     count(env, "SELECT COUNT(*) count FROM orders WHERE ctv_id IS NULL"),
     count(env, "SELECT COUNT(*) count FROM orders WHERE status IN ('paid','completed')"),
     count(env, "SELECT COUNT(*) count FROM ctv_users WHERE active = 1"),
     count(env, "SELECT COUNT(*) count FROM posts WHERE status = 'published'"),
   ]);
-  return json({ orders, paid_orders: paid, ctv_users: ctv, posts });
+  return json({ orders, paid_orders: paid, ctv_users: ctv, posts, integration });
 }
 
 async function adminOrders(request, env) {
@@ -358,7 +404,52 @@ async function requireSession(request, env, role) {
   let payload;
   try { payload = JSON.parse(new TextDecoder().decode(fromBase64Url(payloadPart))); } catch { throw httpError(401, "Phiên không hợp lệ."); }
   if (payload.role !== role || Number(payload.exp) < Date.now()) throw httpError(401, "Phiên đã hết hạn.");
+  if (role === "admin" && payload.sub === "nodns-admin") {
+    const cookie = await remoteCookie(request, env, "admin");
+    const { result } = await providerRequest(env, "/api/auth/me", { cookie });
+    if (result.authenticated === false || unwrap(result).authenticated === false) throw httpError(401, "Phiên quản trị đã hết hạn.");
+  }
   return payload;
+}
+
+async function remoteCtvRoute(request, env, pathname) {
+  const method = request.method;
+  if (pathname === "/api/ctv/login" && method === "POST") {
+    rateLimit(request, "remote-ctv-login", 8, 15 * 60_000);
+    const body = await readJson(request);
+    if (!body.username || !body.password) throw httpError(400, "Nhập tên đăng nhập và mật khẩu.");
+    const cookie = await remoteLogin(request, env, "ctv", { username: body.username, password: body.password });
+    // Fetch account details on the next request using the encrypted cookie.
+    return withCookie(json({ authenticated: true }), cookie);
+  }
+  const cookie = await remoteCookie(request, env, "ctv");
+  if (pathname === "/api/ctv/logout" && method === "POST") {
+    try { await providerRequest(env, "/api/ctv/auth/logout", { method: "POST", cookie }); }
+    catch { /* Clear the local session even when upstream is unavailable. */ }
+    return withCookie(json({ success: true }), clearRemoteCookie("ctv"));
+  }
+  if (pathname === "/api/ctv/me" && method === "GET") {
+    const { result } = await providerRequest(env, "/api/ctv/me", { cookie });
+    return json({ user: publicCtv(result), remote: true });
+  }
+  if (pathname === "/api/ctv/orders" && method === "GET") {
+    const { result } = await providerRequest(env, "/api/ctv/orders", { cookie });
+    return json({ orders: portalOrders(result) });
+  }
+  if (pathname === "/api/ctv/orders" && method === "POST") {
+    const body = await readJson(request);
+    const username = normalizeUsername(body.username);
+    const packages = { "ios-month": "1month", "ios-year": "1year", "ios-lifetime": "lifetime" };
+    const packageId = packages[body.plan_id];
+    if (!username || !packageId) throw httpError(400, "Chỉ hỗ trợ gói iOS qua API NoDNS.");
+    const { result: lookup } = await providerRequest(env, "/api/ctv/lookup", { method: "POST", body: { username }, cookie });
+    const user = unwrap(lookup);
+    if (!user.uid) throw httpError(404, "Không tìm thấy UID của tài khoản.");
+    const { result } = await providerRequest(env, "/api/ctv/upgrade", { method: "POST", body: { userUpgraded: username, userId: user.uid, packageId, testflight: false }, cookie });
+    const data = unwrap(result);
+    return json({ message: result.message || "Đã gửi yêu cầu cấp Gold.", code: data.orderId || data.id || user.uid }, 201);
+  }
+  throw httpError(404, "Không tìm thấy API CTV.");
 }
 
 async function signSession(payload, secret) {
@@ -423,7 +514,7 @@ function fromBase64Url(value) { const base64 = value.replace(/-/g, "+").replace(
 function httpError(status, message) { const error = new Error(message); error.status = status; return error; }
 function requireDb(env) { if (!env.DB) throw httpError(503, "Cơ sở dữ liệu D1 chưa được kết nối."); }
 async function count(env, sql) { const row = await env.DB.prepare(sql).first(); return Number(row?.count || 0); }
-function logout(name) { return withCookie(json({ success: true }), `${name}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`); }
+function logout(name) { return withCookie(withCookie(json({ success: true }), `${name}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`), clearRemoteCookie(name === "lg_admin" ? "admin" : "ctv")); }
 function withCookie(response, cookie) { const headers = new Headers(response.headers); headers.append("Set-Cookie", cookie); return new Response(response.body, { status: response.status, headers }); }
 function json(data, status = 200) { return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } }); }
 function secure(response) { const headers = new Headers(response.headers); for (const [key, value] of Object.entries(securityHeaders())) headers.set(key, value); return new Response(response.body, { status: response.status, statusText: response.statusText, headers }); }

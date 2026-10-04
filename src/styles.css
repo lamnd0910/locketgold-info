@@ -550,6 +550,13 @@ body:not([data-page="admin"]) :is(.form-card label small, .privacy-line, .bank-b
   .admin-top { align-items: flex-start; flex-direction: column; }
 }
 
+.locket-profile { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.locket-profile img { border-radius: 50%; object-fit: cover; }
+.locket-profile p { margin: 4px 0; }
+.admin-sidebar nav a.is-active { background: #1e293b; color: #f59e0b; border-left: 3px solid #f59e0b; }
+.admin-main > section[hidden] { display: none; }
+.admin-login[hidden], .admin-dashboard[hidden], .portal-dashboard[hidden] { display: none; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; }

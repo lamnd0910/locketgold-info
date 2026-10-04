@@ -4,6 +4,7 @@ dist/
 .wrangler/
 tmp/
 .dev.vars*
+!.dev.vars.example
 
 # Local environment files and logs
 .env

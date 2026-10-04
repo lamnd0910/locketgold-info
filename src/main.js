@@ -204,7 +204,7 @@ function checkoutPage() {
     <ol id="checkout-progress" class="checkout-progress" aria-label="Tiến trình đặt hàng"><li aria-current="step"><b>1</b><span>Thông tin</span></li><li><b>2</b><span>Xác nhận</span></li><li><b>3</b><span>Chọn gói</span></li><li><b>4</b><span>Thanh toán</span></li></ol>
     <div class="checkout-layout"><form id="checkout-form" class="form-card" novalidate>
       <section class="checkout-step" data-checkout-step="1"><span class="eyebrow">Bước 1 / 4</span><h2 tabindex="-1">Nhập thông tin</h2><p>Thông tin này dùng để tạo đơn và liên hệ khi cần hỗ trợ.</p><label>Username Locket<span class="input-with-action"><input name="username" autocomplete="off" minlength="2" maxlength="65" required placeholder="Ví dụ: @username"><button class="button button--outline button--small" type="button" id="paste-username">Dán</button></span><small>Dán link hồ sơ Locket để tự tách Username nếu link có định dạng được hỗ trợ.</small></label><label>Email hoặc số điện thoại hỗ trợ<input name="contact" autocomplete="email" maxlength="120" required placeholder="Để nhận trạng thái đơn"></label><p id="checkout-account-message" class="form-message" aria-live="polite"></p><div class="checkout-step-actions"><button class="button" type="button" data-checkout-next>Tiếp tục →</button></div></section>
-      <section class="checkout-step" data-checkout-step="2" hidden><span class="eyebrow">Bước 2 / 4</span><h2 tabindex="-1">Tự xác nhận Username</h2><div class="checkout-confirm"><small>Username bạn đã nhập</small><strong id="confirm-username">—</strong><small>Liên hệ: <span id="confirm-contact">—</span></small></div><p class="checkout-disclaimer">Đây là thông tin bạn tự nhập. Website chưa tra cứu hay xác minh tài khoản với Locket; hãy đối chiếu Username trong ứng dụng trước khi tiếp tục.</p><label class="consent"><input name="username_confirmed" type="checkbox"> Tôi đã kiểm tra đúng Username của mình.</label><p id="checkout-confirm-message" class="form-message" aria-live="polite"></p><div class="checkout-step-actions"><button class="button button--outline" type="button" data-checkout-back>← Quay lại</button><button class="button" type="button" data-checkout-next>Tiếp tục →</button></div></section>
+      <section class="checkout-step" data-checkout-step="2" hidden><span class="eyebrow">Bước 2 / 4</span><h2 tabindex="-1">Xác nhận tài khoản Locket</h2><div class="checkout-confirm"><div id="locket-profile" class="locket-profile"></div><small>Username bạn đã nhập</small><strong id="confirm-username">—</strong><small>Liên hệ: <span id="confirm-contact">—</span></small></div><p class="checkout-disclaimer">Thông tin tài khoản được tra cứu qua NoDNS. Hãy đối chiếu tên, ảnh và Username với tài khoản của bạn trước khi tiếp tục.</p><label class="consent"><input name="username_confirmed" type="checkbox"> Tôi đã kiểm tra đúng Username của mình.</label><p id="checkout-confirm-message" class="form-message" aria-live="polite"></p><div class="checkout-step-actions"><button class="button button--outline" type="button" data-checkout-back>← Quay lại</button><button class="button" type="button" data-checkout-next>Tiếp tục →</button></div></section>
       <section class="checkout-step" data-checkout-step="3" hidden><span class="eyebrow">Bước 3 / 4</span><h2 tabindex="-1">Chọn gói Gold</h2><p>Kiểm tra nền tảng, thời hạn và giá trước khi tạo đơn.</p><fieldset class="checkout-plan-fieldset"><legend class="sr-only">Chọn gói Gold</legend><div id="checkout-plan-options" class="checkout-plan-options">${checkoutPlanOptions(fallbackPlans, selected)}</div></fieldset><div class="promo-row"><label>Mã giảm giá<input name="promo_code" maxlength="32" placeholder="Nhập mã nếu có"></label><button class="button button--outline" type="button" id="apply-promo">Áp dụng</button></div><p id="quote-message" class="form-message" aria-live="polite"></p><div class="checkout-step-actions"><button class="button button--outline" type="button" data-checkout-back>← Quay lại</button><button class="button" type="button" data-checkout-next>Kiểm tra đơn →</button></div></section>
       <section class="checkout-step" data-checkout-step="4" hidden><span class="eyebrow">Bước 4 / 4</span><h2 tabindex="-1">Kiểm tra & tạo đơn</h2><dl class="checkout-review"><div><dt>Username</dt><dd id="review-username">—</dd></div><div><dt>Liên hệ</dt><dd id="review-contact">—</dd></div><div><dt>Gói Gold</dt><dd id="review-plan">—</dd></div><div><dt>Số tiền</dt><dd id="review-total">—</dd></div></dl><p class="checkout-disclaimer">Bấm tạo đơn chưa chuyển tiền. Thông tin ngân hàng và mã nội dung chuyển khoản chỉ xuất hiện sau khi đơn được tạo thành công.</p><label class="consent"><input name="order_confirmed" type="checkbox"> Tôi xác nhận thông tin và gói đã chọn là chính xác.</label><p id="checkout-submit-message" class="form-message" aria-live="polite"></p><div class="checkout-step-actions"><button class="button button--outline" type="button" data-checkout-back>← Quay lại</button><button class="button" type="submit">Tạo đơn thanh toán</button></div></section>
       <p class="privacy-line">🔒 Không yêu cầu đăng nhập, mật khẩu hay OTP.</p></form>
@@ -217,7 +217,7 @@ function ctvPage() {
 }
 
 function adminPage() {
-  return `<main class="admin-shell"><section id="admin-login-wrap" class="admin-login"><div>${brand()}<form id="admin-login" class="form-card form-card--narrow"><span class="eyebrow">Khu vực bảo mật</span><h1>Đăng nhập quản trị</h1><label>Mật khẩu quản trị<input name="password" type="password" autocomplete="current-password" required></label><button class="button" type="submit">Đăng nhập</button><p id="admin-message" class="form-message" aria-live="polite"></p></form></div></section><section id="admin-dashboard" class="admin-dashboard" hidden></section></main>`;
+  return `<main class="admin-shell"><section id="admin-login-wrap" class="admin-login"><div>${brand()}<form id="admin-login" class="form-card form-card--narrow"><span class="eyebrow">Khu vực bảo mật</span><h1>Đăng nhập quản trị</h1><label>Tên đăng nhập<input name="username" autocomplete="username" required value="admin"></label><label>Mật khẩu quản trị<input name="password" type="password" autocomplete="current-password" required></label><button class="button" type="submit">Đăng nhập</button><p id="admin-message" class="form-message" aria-live="polite"></p></form></div></section><section id="admin-dashboard" class="admin-dashboard" hidden></section></main>`;
 }
 
 app.innerHTML = (pages[page] || pages.home)();
@@ -563,9 +563,22 @@ function initCheckout() {
     if (button.disabled) return;
     if (activeStep === 1) {
       if (!validateAccount()) return;
-      document.querySelector("#confirm-username").textContent = `@${normalizeUsername(usernameInput.value)}`;
-      document.querySelector("#confirm-contact").textContent = contactInput.value.trim();
-      showStep(2);
+      button.disabled = true;
+      accountMessage.textContent = "Đang tra cứu tài khoản Locket…";
+      const username = normalizeUsername(usernameInput.value);
+      try {
+        const profile = await api(`/api/locket/userinfo?user=${encodeURIComponent(username)}`);
+        if (normalizeUsername(usernameInput.value) !== username) return;
+        document.querySelector("#confirm-username").textContent = `@${profile.username}`;
+        document.querySelector("#confirm-contact").textContent = contactInput.value.trim();
+        document.querySelector("#locket-profile").innerHTML = `${profile.avatar ? `<img src="${escapeHtml(profile.avatar)}" alt="Ảnh đại diện Locket" width="64" height="64" referrerpolicy="no-referrer">` : ""}<div><b>${escapeHtml(profile.full_name || profile.username)}</b><p>${profile.gold?.has_gold ? "Đang có Gold" : "Chưa có Gold"}</p></div>`;
+        accountMessage.textContent = "";
+        usernameConfirmed.checked = false;
+        showStep(2);
+      } catch (error) {
+        accountMessage.textContent = error.message;
+        accountMessage.className = "form-message is-error";
+      } finally { button.disabled = false; }
     } else if (activeStep === 2) {
       if (!usernameConfirmed.checked) {
         confirmMessage.textContent = "Hãy tự kiểm tra Username trong ứng dụng Locket trước khi tiếp tục.";
@@ -707,22 +720,43 @@ function initCtv() {
     const message = document.querySelector("#ctv-message");
     try {
       const result = await api("/api/ctv/login", { method: "POST", body: JSON.stringify(Object.fromEntries(new FormData(form))) });
-      renderCtv(result.user);
+      const account = result.user ? result : await api("/api/ctv/me");
+      await renderCtv(account.user, account.remote);
     } catch (error) { message.textContent = error.message; message.className = "form-message is-error"; }
   });
-  api("/api/ctv/me").then(({ user }) => renderCtv(user)).catch(() => {});
+  api("/api/ctv/me").then(({ user, remote }) => renderCtv(user, remote)).catch(() => {});
 }
 
-async function renderCtv(user) {
+async function renderCtv(user, remote = false) {
   document.querySelector("#ctv-login").hidden = true;
   const dashboard = document.querySelector("#ctv-dashboard");
   dashboard.hidden = false;
   dashboard.innerHTML = `<div class="portal-head"><div><span class="eyebrow">CTV đang hoạt động</span><h2>Xin chào, ${escapeHtml(user.username)}</h2></div><button id="ctv-logout" class="button button--outline button--small">Đăng xuất</button></div><div class="metric-grid"><article><span>Số dư</span><strong id="ctv-balance">${money(user.balance)}</strong></article><article><span>Tổng đơn</span><strong id="ctv-order-count">${Number(user.order_count || 0)}</strong></article><article><span>Đơn hoàn tất</span><strong id="ctv-completed-count">${Number(user.completed_count || 0)}</strong></article></div><div class="ctv-grid"><form id="ctv-order-form" class="form-card"><h2>Tạo đơn CTV</h2><label>Gói<select name="plan_id">${fallbackPlans.map((plan) => `<option value="${plan.id}">${plan.platform} · ${plan.name} · ${money(plan.price)}</option>`).join("")}</select></label><label>Username Locket<input name="username" required maxlength="64" autocomplete="off"></label><button class="button" type="submit">Tạo đơn từ số dư</button><p class="form-message" aria-live="polite"></p></form><section class="history-card"><h2>Lịch sử đơn</h2><div id="ctv-orders"><p>Đang tải…</p></div></section></div>`;
+  if (remote) {
+    dashboard.dataset.remote = "true";
+    dashboard.querySelector('.metric-grid article:nth-child(2) span').textContent = "Đơn trong lịch sử";
+    document.querySelector("#ctv-order-count").textContent = "—";
+    dashboard.querySelector('.metric-grid article:nth-child(3)').innerHTML = `<span>Lượt còn lại</span><strong id="ctv-completed-count">${Number(user.remaining || 0)}</strong>`;
+    const select = dashboard.querySelector('select[name="plan_id"]');
+    select.querySelector('option[value="android-lifetime"]')?.remove();
+    [...select.options].forEach((option) => {
+      const plan = fallbackPlans.find((item) => item.id === option.value);
+      option.textContent = `${plan.platform} · ${plan.name}`;
+    });
+    const submit = dashboard.querySelector('#ctv-order-form button[type="submit"]');
+    submit.textContent = "Cấp Gold bằng lượt NoDNS";
+    const hint = document.createElement("p");
+    hint.textContent = "Tài khoản và lượt được quản lý tại NoDNS. Gói vĩnh viễn có thể trừ 2 lượt theo cấu hình nhà cung cấp.";
+    submit.before(hint);
+  }
   document.querySelector("#ctv-logout").addEventListener("click", async () => { await api("/api/ctv/logout", { method: "POST" }); location.reload(); });
   document.querySelector("#ctv-order-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const orderForm = event.currentTarget;
     const message = orderForm.querySelector(".form-message");
+    const submit = orderForm.querySelector('button[type="submit"]');
+    if (submit.disabled) return;
+    submit.disabled = true;
     try {
       const result = await api("/api/ctv/orders", { method: "POST", body: JSON.stringify(Object.fromEntries(new FormData(orderForm))) });
       message.textContent = `${result.message} Mã: ${result.code}`;
@@ -730,9 +764,10 @@ async function renderCtv(user) {
       orderForm.reset();
       const [{ user: freshUser }] = await Promise.all([api("/api/ctv/me"), loadCtvOrders()]);
       document.querySelector("#ctv-balance").textContent = money(freshUser.balance);
-      document.querySelector("#ctv-order-count").textContent = freshUser.order_count;
-      document.querySelector("#ctv-completed-count").textContent = freshUser.completed_count;
+      if (!remote) document.querySelector("#ctv-order-count").textContent = freshUser.order_count;
+      document.querySelector("#ctv-completed-count").textContent = remote ? freshUser.remaining : freshUser.completed_count;
     } catch (error) { message.textContent = error.message; message.className = "form-message is-error"; }
+    finally { submit.disabled = false; }
   });
   loadCtvOrders();
 }
@@ -742,6 +777,7 @@ async function loadCtvOrders() {
   if (!target) return;
   try {
     const { orders } = await api("/api/ctv/orders");
+    if (document.querySelector("#ctv-dashboard")?.dataset.remote === "true") document.querySelector("#ctv-order-count").textContent = orders.length;
     target.innerHTML = orders.length ? `<div class="table-wrap"><table><thead><tr><th>Mã</th><th>Username</th><th>Gói</th><th>Trạng thái</th></tr></thead><tbody>${orders.map((order) => `<tr><td>${escapeHtml(order.code)}</td><td>${escapeHtml(order.username)}</td><td>${escapeHtml(order.plan_name)}</td><td><span class="status status--${escapeHtml(order.status)}">${escapeHtml(order.status)}</span></td></tr>`).join("")}</tbody></table></div>` : "<p>Chưa có đơn nào.</p>";
   } catch (error) { target.innerHTML = `<p>${escapeHtml(error.message)}</p>`; }
 }
@@ -765,6 +801,46 @@ async function renderAdmin() {
   dash.hidden = false;
   dash.innerHTML = `<aside class="admin-sidebar">${brand()}<nav><a href="#overview">▦ Bảng điều khiển</a><a href="#orders-admin">▤ Đơn hàng</a><a href="#plans-admin">⌑ Bảng giá</a><a href="#posts">✎ Bài viết</a><a href="#promos">％ Mã giảm giá</a><a href="#settings">⚙ Cấu hình công khai</a><a href="#ctv-admin">♙ Cộng tác viên</a></nav><button id="admin-logout">Đăng xuất</button></aside><div class="admin-main"><div class="admin-top"><div><small>SB ADMIN / Bảng điều khiển</small><h1>Quản lý Locket Gold</h1></div><a class="button button--small" href="/">Xem website ↗</a></div><section id="overview" class="metric-grid"><article><span>Đơn khách lẻ</span><strong>${Number(data.orders || 0)}</strong></article><article><span>Đã thanh toán</span><strong>${Number(data.paid_orders || 0)}</strong></article><article><span>Cộng tác viên</span><strong>${Number(data.ctv_users || 0)}</strong></article><article><span>Bài viết</span><strong>${Number(data.posts || 0)}</strong></article></section>${adminForms()}</div>`;
   document.querySelector("#admin-logout").addEventListener("click", async () => { await api("/api/admin/logout", { method: "POST" }); location.reload(); });
+  const integration = data.integration || {};
+  const provider = document.createElement("section");
+  provider.id = "provider-admin";
+  provider.className = "admin-panel";
+  provider.innerHTML = `<h2>Kết nối NoDNS</h2><p>API cấp Gold: <strong>${integration.nodns_key ? "Đã cấu hình khóa" : "Chưa cấu hình NODNS_API_KEY"}</strong> · D1: <strong>${integration.database ? "Đã kết nối" : "Chưa kết nối"}</strong></p><p>CTV: ${integration.remote_ctv ? "Tài khoản và lượt trên NoDNS" : "Tài khoản và số dư trong D1"}. Đơn khách lẻ, giá, bài viết và mã giảm giá được quản lý trong D1 của website.</p><button id="provider-refresh" class="button button--outline" type="button">Kiểm tra API và lịch sử cấp Gold</button><div id="provider-result" aria-live="polite"></div>`;
+  dash.querySelector("#overview").after(provider);
+  const providerLink = document.createElement("a");
+  providerLink.href = "#provider-admin";
+  providerLink.textContent = "⇄ API NoDNS";
+  dash.querySelector(".admin-sidebar nav").append(providerLink);
+  if (integration.remote_ctv) {
+    dash.querySelector("#ctv-admin").innerHTML = '<h2>Tài khoản CTV NoDNS</h2><p>Cổng CTV sử dụng tài khoản, số dư và lượt trên NoDNS. Tài liệu hiện có chưa cung cấp endpoint admin để tạo tài khoản hoặc điều chỉnh số dư CTV.</p><a class="button button--outline" href="https://ctv.nodns.vn" target="_blank" rel="noopener">Mở hệ thống NoDNS ↗</a>';
+  }
+  document.querySelector("#provider-refresh").addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    if (button.disabled) return;
+    button.disabled = true;
+    const target = document.querySelector("#provider-result");
+    target.textContent = "Đang kiểm tra…";
+    try {
+      const { account, orders } = await api("/api/admin/provider");
+      target.innerHTML = `<p>Tài khoản: <b>${escapeHtml(account.username)}</b> · Lượt còn lại: <b>${Number(account.remaining)}</b> · Đã dùng: ${Number(account.used)}</p>${orders.length ? `<div class="table-wrap"><table><thead><tr><th>Tài khoản Locket</th><th>Trạng thái Gold</th><th>Ngày hết hạn</th></tr></thead><tbody>${orders.map((order) => `<tr><td>${escapeHtml(order.username)}</td><td>${escapeHtml(order.status)}</td><td>${order.expiresAt ? escapeHtml(formatDate(order.expiresAt)) : "Vĩnh viễn"}</td></tr>`).join("")}</tbody></table></div>` : "<p>Chưa có lịch sử cấp Gold.</p>"}`;
+    } catch (error) { target.textContent = error.message; }
+    finally { button.disabled = false; }
+  });
+  const navLinks = [...dash.querySelectorAll(".admin-sidebar nav a")];
+  const panels = [...dash.querySelectorAll(".admin-main > section")];
+  const activate = (hash) => {
+    const selected = panels.find((panel) => `#${panel.id}` === hash) || panels[0];
+    panels.forEach((panel) => { panel.hidden = panel !== selected; });
+    navLinks.forEach((link) => {
+      const active = link.hash === `#${selected.id}`;
+      link.classList.toggle("is-active", active);
+      if (active) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+  };
+  navLinks.forEach((link) => link.addEventListener("click", () => activate(link.hash)));
+  window.addEventListener("hashchange", () => activate(location.hash));
+  activate(location.hash || "#overview");
   bindAdminForms();
   loadAdminOrders();
 }

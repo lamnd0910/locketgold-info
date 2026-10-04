@@ -1,0 +1,10 @@
+# Copy to .dev.vars for local Wrangler. Never commit actual keys.
+SESSION_SECRET=
+NODNS_API_KEY=
+SEPAY_WEBHOOK_API_KEY=
+BANK_NAME=
+BANK_BIN=
+BANK_ACCOUNT=
+BANK_ACCOUNT_NAME=
+# Optional legacy admin password hash when NODNS_ADMIN_AUTH=false.
+ADMIN_PASSWORD_SHA256=

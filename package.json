@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "npm run build && wrangler dev --local --port 8787",
     "build": "vite build",
     "test": "node --test",
     "preview": "vite preview",

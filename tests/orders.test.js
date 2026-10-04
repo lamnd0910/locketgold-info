@@ -185,3 +185,23 @@ test("SePay plus explicit upstream completion completes the order", async (t) =>
   await Promise.all(scheduled);
   assert.equal(db.state.order.status, "completed");
 });
+
+test("NoDNS grant completes paid iOS orders only after explicit active confirmation", async (t) => {
+  for (const active of [false, true]) {
+    const db = paymentDb();
+    const scheduled = [];
+    const mock = t.mock.method(globalThis, "fetch", async (url, options) => {
+      assert.equal(url, "https://ctv.nodns.vn/api/v1/grant");
+      assert.equal(options.headers["x-api-key"], "nodns-secret");
+      assert.deepEqual(JSON.parse(options.body), { user: "alice", days: 30, note: "LGABCDEFGH" });
+      return Response.json({ status: "success", data: { active, uid: "alice-uid" } });
+    });
+    const response = await worker.fetch(webhookRequest(`nodns-${active}`), {
+      DB: db, SEPAY_WEBHOOK_API_KEY: "test-secret", NODNS_API_KEY: "nodns-secret",
+    }, { waitUntil(promise) { scheduled.push(promise); } });
+    assert.equal(response.status, 200);
+    await Promise.all(scheduled);
+    assert.equal(db.state.order.status, active ? "completed" : "paid");
+    mock.mock.restore();
+  }
+});
