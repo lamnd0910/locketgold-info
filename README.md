@@ -24,6 +24,8 @@ Trang `/thanh-toan/` có bốn bước: nhập thông tin, tự xác nhận User
 
 Sau khi tạo đơn, trang tự kiểm tra trạng thái mỗi 5 giây và tạm dừng khi tab bị ẩn. Gói Android mở hướng dẫn nhận APK qua Zalo và cài đặt khi SePay xác nhận thanh toán. Gói iOS chỉ mở hướng dẫn lên Gold khi API nâng cấp xác nhận hoàn tất; HTTP 200 hoặc phản hồi đang xử lý chưa được tính là hoàn tất.
 
+Đơn khách lẻ có hạn thanh toán **10 phút từ lúc tạo**, lưu mốc `expires_at` trên máy chủ (migration `0008_order_payment_deadline.sql`). Trang hiển thị đồng hồ đếm ngược; đơn hết hạn ẩn QR và cho tạo đơn mới. Cron mỗi phút, API tra cứu và trang admin cập nhật đơn `pending` quá hạn thành `cancelled` với dấu `expired_at`. Các đơn đã nhận tiền hoặc hoàn tất không bị hủy theo thời gian. Webhook nhận sau hạn vẫn lưu giao dịch với kết quả `expired_order` để đối soát, không tự cấp Gold; cần liên hệ hỗ trợ nếu khách đã chuyển tiền.
+
 Chế độ API tùy chỉnh cũ hỗ trợ JSON `{"status":"completed"}` hoặc `{"completed":true}`. Cần đối chiếu mẫu phản hồi thực tế của nhà cung cấp và chỉnh `worker/activation.js` trước khi kết nối API khác. API xử lý bất đồng bộ cần tích hợp thêm webhook hoặc tra cứu trạng thái theo tài liệu nhà cung cấp để chuyển đơn từ `paid` sang `completed`. Nội dung hướng dẫn sau mua nằm trong `src/post-purchase.js`; ảnh và nguyên văn hướng dẫn hoàn tất cần được cung cấp để thay nội dung iOS hiện tại.
 
 Trang `/huong-dan/` có bộ 4 bước tương tác và FAQ. Nội dung chuyển khoản luôn dẫn khách xem thông tin trên đơn thực tế, không hiển thị QR hoặc số tài khoản cố định từ ảnh minh họa.
@@ -91,6 +93,12 @@ Trong SePay, tạo webhook cho giao dịch tiền vào:
 
 Worker xác thực header, chỉ nhận giao dịch tiền vào, kiểm tra số tiền, chống xử lý trùng bằng transaction ID và mới gọi API kích hoạt sau khi đơn được đánh dấu đã thanh toán.
 
+Thông tin nhận tiền hiện cấu hình trong `wrangler.jsonc`: MB Bank, BIN `970422`, STK `5565662518`. QR động dùng `https://vietqr.app/img` theo tài liệu SePay, lấy số tiền cuối cùng sau giảm giá và nội dung là mã đơn từ API. CSP cho phép ảnh từ `vietqr.app`. Tên chủ tài khoản có thể bổ sung bằng `BANK_ACCOUNT_NAME` sau khi xác nhận.
+
+Để xác nhận tự động, liên kết STK trên với SePay; tạo webhook **Có tiền vào**, chọn đúng tài khoản, URL `https://locketgold.info/api/sepay/webhook`, xác thực **API Key** bằng cùng khóa `SEPAY_WEBHOOK_API_KEY` của Worker. Cấu trúc mã thanh toán: tiền tố `LG`, hậu tố 8 ký tự chữ và số. Worker bỏ qua giao dịch khác tài khoản nhận; đơn thiếu tiền giữ trạng thái chờ. QR tự điền thông tin chuyển khoản; xác nhận đã nhận tiền vẫn cần webhook SePay thật. Không gửi webhook giả để đánh dấu đơn thật đã thanh toán.
+
+Trong admin, mục **Giao dịch SePay** gọi `/api/admin/sepay` để xem 100 webhook mới nhất, tìm theo mã đơn/giao dịch/nội dung, lọc kết quả và kiểm tra cấu hình nhận tiền. Mục này tự cập nhật mỗi 15 giây khi mở. Webhook đã xác thực được ghi nhận cả khi không khớp đơn, thiếu tiền hoặc sai tài khoản; giao dịch trùng chỉ lưu một lần. Bản ghi trước migration `0004_sepay_event_status.sql` hiện là “Bản ghi cũ”, không suy đoán đã thanh toán. API chỉ dành cho phiên admin và không trả khóa webhook hoặc toàn bộ payload. Đây là lịch sử webhook website nhận được; không phải truy vấn trực tiếp lịch sử ngân hàng hoặc xác minh webhook đã bật trên SePay.
+
 ## DNS, APK và API kích hoạt
 
 Đăng nhập `/quan-tri-locket/` để cấu hình đường dẫn HTTPS tải DNS/APK, URL API kích hoạt và liên kết hỗ trợ. Đường dẫn riêng chỉ giảm khả năng bị dò thấy, không thay thế mật khẩu mạnh; khóa API và cấu hình SePay vẫn chỉ tồn tại trong Cloudflare Secrets. Sau khi cập nhật mã, áp dụng migration mới để bật trường giá cũ: `npx wrangler d1 migrations apply locketgold-db --remote` (nếu đã kết nối D1).
@@ -112,6 +120,8 @@ npm run deploy
 Sau khi build thành công, vào **Workers & Pages → locketgold-info → Domains & Routes** để gắn `locketgold.info` và `www.locketgold.info`.
 
 ## Cấu trúc chính
+
+Admin → **Bài viết** có phần chèn ảnh từ máy tính (JPG/PNG/WebP, tối đa 20 MB trước tối ưu). Trình duyệt thu nhỏ cạnh dài tối đa 1600 px và chuyển sang WebP; Worker chỉ nhận ảnh tối đa 1 MB, kiểm tra định dạng và lưu BLOB trong `post_images` (migration `0007_post_images.sql`). Ảnh được chèn tại con trỏ bằng cú pháp `![mô tả](/api/images/UUID)` trên một dòng riêng. Trang bài viết chỉ render ảnh thuộc đường dẫn này; HTML hoặc URL ảnh ngoài được hiển thị như văn bản. Mô tả ảnh làm alt text và chú thích. Upload chỉ dành cho phiên admin; ảnh trong bài được phục vụ công khai trên cùng website.
 
 ```text
 ├── admin/                 # trang quản trị
@@ -145,11 +155,13 @@ Các ảnh do chủ dự án cung cấp không phải tài sản chính thức c
 
 ## Kết nối API NoDNS
 
+Trong admin → **API NoDNS → Đổi API key NoDNS**, nhập khóa mới rồi bấm **Kiểm tra và lưu API key**. Worker gọi `/api/v1/me` để xác nhận khóa; lỗi kiểm tra giữ khóa cũ. Khóa được mã hóa AES-GCM bằng `SESSION_SECRET` và lưu trong bảng riêng `provider_credentials` (migration `0006_provider_credentials.sql`). `NODNS_CREDENTIALS_ENABLED=true` bật việc đọc khóa này. Khóa lưu qua admin ưu tiên hơn `NODNS_API_KEY` trong Cloudflare; khi chưa lưu khóa qua admin, Cloudflare Secret vẫn được dùng. Mọi phản hồi chỉ trả thông tin tài khoản và nguồn cấu hình, không trả khóa hoặc dữ liệu mã hóa. Không thay `SESSION_SECRET` khi chưa chuẩn bị lưu lại khóa NoDNS và đăng nhập lại các phiên phụ thuộc secret này. Việc đổi key không chuyển quyền sở hữu Gold giữa các tài khoản NoDNS.
+
 Đã đối chiếu [API admin/CTV](https://github.com/Duckcozy/api-admin-and-ctv), [API web chính](https://github.com/Duckcozy/api-web-ch-nh) và [demo admin](https://github.com/Duckcozy/trang-admin-demo). Các repo chứa tài liệu Postman và demo HTML.
 
-`wrangler.jsonc` bật mặc định `NODNS_API_BASE_URL=https://ctv.nodns.vn`, `NODNS_ADMIN_AUTH=true` và `NODNS_CTV_PORTAL=true`.
+`wrangler.jsonc` dùng `NODNS_API_BASE_URL=https://ctv.nodns.vn`, `NODNS_ADMIN_AUTH=false`, `ADMIN_USERNAME=admin` và `NODNS_CTV_PORTAL=true`.
 
-- Admin dùng username/password NoDNS qua `/api/auth/login`, kiểm tra phiên qua `/api/auth/me`. Quản lý website vẫn dùng D1 của website.
+- Admin website dùng `ADMIN_USERNAME` và secret `ADMIN_PASSWORD_SHA256`. Muốn dùng tài khoản NoDNS, đổi `NODNS_ADMIN_AUTH=true`; khi đó đăng nhập qua `/api/auth/login` và kiểm tra phiên qua `/api/auth/me`. Quản lý website vẫn dùng D1 của website.
 - CTV đăng nhập qua `/api/ctv/auth/login`, xem tài khoản và lịch sử NoDNS. Tạo đơn gọi `/api/ctv/lookup` rồi `/api/ctv/upgrade`, sử dụng lượt NoDNS.
 - Khách lẻ tra cứu tên, avatar và trạng thái Gold qua `/api/v1/userinfo` trước khi xác nhận tài khoản.
 - Khi SePay xác nhận thanh toán, Worker gọi `/api/v1/grant` với `{user, days, note}`: tháng = 30 ngày, năm = 365 ngày, vĩnh viễn bỏ `days`. Chỉ `status=success` và `data.active=true` mới hoàn tất đơn. Lỗi hoặc phản hồi chờ giữ đơn ở `paid`, cần đối soát; Worker không tự gọi lại grant để tránh trừ lượt trùng.
@@ -182,3 +194,15 @@ npm run dev
 Vite proxy `/api` sang Worker local cổng 8787. Worker local vẫn gọi API NoDNS thật; cấp Gold có thể trừ lượt thật. Dùng tài khoản thử nghiệm khi kiểm tra.
 
 Quay về tài khoản D1 cũ bằng `NODNS_CTV_PORTAL=false`, `NODNS_ADMIN_AUTH=false` và cấu hình `ADMIN_PASSWORD_SHA256`. Nhánh `UPSTREAM_API_URL`/`UPSTREAM_API_KEY` cũ chỉ dùng khi chưa có `NODNS_API_KEY`.
+
+## JSON API dùng trong admin
+
+Mục **Tài khoản quản trị** cho phép đổi tên đăng nhập và mật khẩu cục bộ sau khi xác thực mật khẩu hiện tại. Migration `0010_admin_credentials.sql` lưu mật khẩu băm PBKDF2 cùng mã phiên; bật `ADMIN_CREDENTIALS_ENABLED=true`. Khi đã lưu tài khoản trong D1, thông tin mới thay thế `ADMIN_USERNAME`/`ADMIN_PASSWORD_SHA256`; các phiên cũ bị vô hiệu hóa. Phiên đang lưu được cấp cookie mới. Để trống mật khẩu mới nếu chỉ đổi tên. Tài khoản NoDNS dùng xác thực bên ngoài phải đổi trên NoDNS.
+
+Mục **Hủy Gold** trong admin tra cứu Username, yêu cầu xác nhận đúng tài khoản rồi gọi `POST /api/v1/cancel` bằng `NODNS_API_KEY` của website. Chỉ tài khoản thuộc key này mới hủy được; phiên admin NoDNS không thay thế API key. Lượt được hoàn hay không dựa trên phản hồi thực tế của NoDNS. Hủy Gold không hoàn tiền ngân hàng, không xóa lịch sử thanh toán. Migration `0005_gold_cancellations.sql` lưu lịch sử hủy và đánh dấu quyền Gold của đơn đã bị thu hồi để không tiếp tục hiển thị màn hình đã kích hoạt.
+
+Collection admin tách từ **Proxy Admin API v2** mới được cung cấp: `public/downloads/admin.postman_collection.json`. Chỉ giữ nhóm **Auth - Admin**, gồm `POST /api/auth/login`, `POST /api/auth/logout` và `GET /api/auth/me`. Loại toàn bộ nhóm CTV, V1 dùng API key và public. Import vào Postman, gửi Login Admin trước; Postman lưu cookie để gọi Me/Logout. Không cần biến `apiKey`.
+
+Trong `/quan-tri-locket/`, mở **Admin NoDNS** để tải JSON, kết nối tài khoản admin NoDNS, kiểm tra phiên và đăng xuất. Các route `/api/admin/nodns/login`, `/me`, `/logout` chỉ dành cho admin website đã đăng nhập; Worker gọi các endpoint nguồn bằng cookie phiên. Cookie NoDNS được mã hóa trong cookie HttpOnly, không trả về JSON. Cần `SESSION_SECRET`; không dùng `NODNS_API_KEY` cho các thao tác này.
+
+Khi `NODNS_ADMIN_AUTH=false`, admin website đăng nhập bằng tài khoản cục bộ rồi kết nối NoDNS trong mục này. Khi `NODNS_ADMIN_AUTH=true`, dùng phiên NoDNS đã tạo lúc đăng nhập website; đăng xuất NoDNS tại đây cũng kết thúc phiên website. JSON mới chỉ cung cấp xác thực admin, chưa có API quản lý Gold hoặc tạo/chỉnh số dư CTV dành cho admin. Phần quản lý Gold vừa thêm từ file nhầm trước đó đã được gỡ; chức năng CTV và kích hoạt đơn mua có sẵn được giữ nguyên. Các bài kiểm tra dùng API giả lập.

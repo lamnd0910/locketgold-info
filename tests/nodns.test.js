@@ -6,6 +6,22 @@ import { grantPayload, providerRequest, remoteLogin, remoteCookie, publicCtv, po
 const site = "https://locketgold.info";
 const env = { SESSION_SECRET: "test-session-secret-with-at-least-32-bytes", NODNS_CTV_PORTAL: "true" };
 
+test("local admin requires the configured username and password and creates a valid session", async () => {
+  const localEnv = { ...env, NODNS_ADMIN_AUTH: "false", ADMIN_USERNAME: "admin", ADMIN_PASSWORD_SHA256: "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918" };
+  const login = (username, password) => worker.fetch(new Request(`${site}/api/admin/login`, {
+    method: "POST", headers: { "Content-Type": "application/json", "CF-Connecting-IP": "192.0.2.50" },
+    body: JSON.stringify({ username, password }),
+  }), localEnv, {});
+  assert.equal((await login("other", "admin")).status, 401);
+  assert.equal((await login("admin", "wrong")).status, 401);
+  const response = await login("admin", "admin");
+  assert.equal(response.status, 200);
+  const cookie = response.headers.get("Set-Cookie").split(";")[0];
+  const session = await worker.fetch(new Request(`${site}/api/admin/session`, { headers: { Cookie: cookie } }), localEnv, {});
+  assert.equal(session.status, 200);
+  assert.deepEqual(await session.json(), { authenticated: true });
+});
+
 test("admin login reports missing session configuration without calling NoDNS", async (t) => {
   const fetchMock = t.mock.method(globalThis, "fetch", async () => { throw new Error("Unexpected remote login"); });
   t.mock.method(console, "error", () => {});
@@ -28,9 +44,12 @@ test("admin login returns a safe diagnostic when upstream is unavailable", async
 test("NoDNS uses x-api-key and the documented duration payload", async (t) => {
   t.mock.method(globalThis, "fetch", async (url, options) => {
     assert.equal(url, "https://ctv.nodns.vn/api/v1/grant");
+    assert.equal(options.redirect, "manual");
     assert.equal(options.headers["x-api-key"], "private-key");
     assert.equal(options.headers.Authorization, undefined);
-    assert.deepEqual(JSON.parse(options.body), { user: "alice", days: 365, note: "LGABCDEFGH" });
+    const body = JSON.parse(options.body);
+    assert.deepEqual(body, { user: "alice", days: 365, note: "LGABCDEFGH", expiresAt: body.expiresAt });
+    assert.ok(Math.abs(Date.parse(body.expiresAt) - Date.now() - 365 * 86400000) < 1000);
     return Response.json({ status: "success", data: { uid: "uid-1", active: true } }, { status: 201 });
   });
   await providerRequest({ NODNS_API_KEY: "private-key" }, "/api/v1/grant", { method: "POST", apiKey: true, body: grantPayload({ username: "alice", platform: "iOS", plan_id: "ios-year", code: "LGABCDEFGH" }) });
@@ -96,4 +115,20 @@ test("provider business errors and cross-origin mutations are rejected", async (
   await assert.rejects(providerRequest({}, "/api/ctv/upgrade"), { status: 400, message: "Hết lượt" });
   const response = await worker.fetch(new Request(`${site}/api/ctv/orders`, { method: "POST", headers: { Origin: "https://other.example" } }), env, {});
   assert.equal(response.status, 403);
+});
+
+test("NoDNS redirects are rejected without forwarding credentials", async (t) => {
+  const fetchMock = t.mock.method(globalThis, "fetch", async (_url, options) => {
+    assert.equal(options.redirect, "manual");
+    return new Response(null, { status: 302, headers: { Location: "https://other.example/api" } });
+  });
+  await assert.rejects(providerRequest({ NODNS_API_KEY: "private-key" }, "/api/v1/me", { apiKey: true }), { status: 502 });
+  assert.equal(fetchMock.mock.callCount(), 1);
+});
+
+test("public lookup preserves NoDNS not-found errors", async (t) => {
+  t.mock.method(globalThis, "fetch", async () => Response.json({ status: "error", code: 404, message: "Không tìm thấy tài khoản Locket." }, { status: 404 }));
+  const response = await worker.fetch(new Request(`${site}/api/locket/userinfo?user=missing-user`), {}, {});
+  assert.equal(response.status, 404);
+  assert.deepEqual(await response.json(), { error: "Không tìm thấy tài khoản Locket." });
 });

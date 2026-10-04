@@ -1,0 +1,10 @@
+ALTER TABLE orders ADD COLUMN gold_revoked_at TEXT;
+CREATE TABLE IF NOT EXISTS gold_cancellations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL,
+  uid TEXT,
+  admin_username TEXT NOT NULL,
+  refunded INTEGER NOT NULL DEFAULT 0,
+  remaining INTEGER,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

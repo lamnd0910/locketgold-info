@@ -1,0 +1,93 @@
+{
+  "info": {
+    "_postman_id": "proxy-admin-only-v2",
+    "name": "Proxy Admin API - Admin only",
+    "description": "Admin session APIs extracted from the supplied Proxy Admin API v2 collection. Login first; Postman stores the session cookie for Me and Logout. No CTV or x-api-key APIs are included.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base",
+      "value": "https://ctv.nodns.vn",
+      "type": "string",
+      "description": "Base URL của hệ thống"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth - Admin",
+      "item": [
+        {
+          "name": "Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"your-password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base}}/api/auth/login",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Đăng nhập bằng tài khoản admin (local hoặc Supabase). Trả về cookie session."
+          }
+        },
+        {
+          "name": "Logout Admin",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/auth/logout",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Me (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/auth/me",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Kiểm tra session admin đang đăng nhập."
+          }
+        }
+      ]
+    }
+  ]
+}

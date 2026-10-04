@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { postPurchaseState, apkInstallationGuide } from "../src/post-purchase.js";
+import { postPurchaseState, apkInstallationGuide, goldCompletionGuide } from "../src/post-purchase.js";
 import { activationConfirmed } from "../worker/activation.js";
 
 test("unpaid and unsuccessful orders never unlock installation instructions", () => {
@@ -34,7 +34,7 @@ test("the APK guide contains all five steps, troubleshooting and Zalo delivery",
   const guide = apkInstallationGuide();
   for (let step = 1; step <= 5; step += 1) assert.ok(guide.includes(`BƯỚC ${step}`));
   assert.match(guide, /ỨNG DỤNG CHƯA ĐƯỢC CÀI ĐẶT/);
-  assert.match(guide, /File Locket APK sẽ được gửi trong Zalo/);
+  assert.match(guide, /Tệp Locket APK sẽ được gửi trong Zalo/);
 });
 
 test("activation requires completion rather than request acceptance", () => {
@@ -43,4 +43,22 @@ test("activation requires completion rather than request acceptance", () => {
   }
   assert.equal(activationConfirmed({ status: "completed" }), true);
   assert.equal(activationConfirmed({ success: true, completed: true }), true);
+});
+
+test("iOS success screen uses the real account and plan and only unlocks DNS after activation", () => {
+  const order = { code: "LGABCDEFGH", username: "alice", plan_name: "Gói 1 năm", platform: "iOS" };
+  const paid = goldCompletionGuide({ ...order, status: "paid" });
+  assert.match(paid, /Thanh Toán Thành Công/);
+  assert.match(paid, /đang xác nhận kích hoạt/);
+  assert.equal(paid.includes("data-gold-dns"), false);
+  assert.equal(paid.includes("đã được hệ thống kích hoạt"), false);
+  const completed = goldCompletionGuide({ ...order, status: "completed" });
+  assert.match(completed, /@alice/);
+  assert.match(completed, /Gói 1 năm/);
+  assert.match(completed, /data-gold-dns/);
+  assert.match(completed, /Quay Lại Trang Chủ/);
+  assert.equal((completed.match(/<li>/g) || []).length, 4);
+  assert.equal(goldCompletionGuide({ ...order, status: "pending" }), "");
+  const escaped = goldCompletionGuide({ ...order, username: '<img src=x onerror="alert(1)">', status: "completed" });
+  assert.equal(escaped.includes("<img"), false);
 });

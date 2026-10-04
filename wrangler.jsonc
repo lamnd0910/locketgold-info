@@ -2,12 +2,19 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "locketgold-info",
   "main": "./worker/index.js",
+  "triggers": { "crons": ["* * * * *"] },
   "compatibility_date": "2026-09-29",
   "vars": {
     "SITE_URL": "https://locketgold.info",
     "NODNS_API_BASE_URL": "https://ctv.nodns.vn",
     "NODNS_CTV_PORTAL": "true",
-    "NODNS_ADMIN_AUTH": "true"
+    "NODNS_ADMIN_AUTH": "false",
+    "NODNS_CREDENTIALS_ENABLED": "true",
+    "ADMIN_USERNAME": "admin",
+    "ADMIN_CREDENTIALS_ENABLED": "true",
+    "BANK_NAME": "MB Bank",
+    "BANK_BIN": "970422",
+    "BANK_ACCOUNT": "5565662518"
   },
   "assets": {
     "directory": "./dist",
@@ -15,14 +22,15 @@
     "run_worker_first": ["/api/*"]
   },
 
-  // Sau khi chạy `npx wrangler d1 create locketgold-db`, bỏ chú thích
-  // khối dưới đây và thay database_id bằng ID Cloudflare trả về.
-  // "d1_databases": [
-  //   {
-  //     "binding": "DB",
-  //     "database_name": "locketgold-db",
-  //     "database_id": "PASTE_DATABASE_ID_HERE",
-  //     "migrations_dir": "migrations"
-  //   }
-  // ]
+  "routes": [
+    { "pattern": "locketgold.info", "custom_domain": true }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "locketgold-db",
+      "database_id": "fc247c70-d967-4a1b-a492-2e2620c8475f",
+      "migrations_dir": "migrations"
+    }
+  ]
 }

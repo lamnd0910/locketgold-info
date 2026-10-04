@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS post_images (
+  id TEXT PRIMARY KEY,
+  mime_type TEXT NOT NULL,
+  image_data BLOB NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

@@ -27,7 +27,7 @@ test("invalid usernames are rejected without creating an order", async () => {
   for (const username of invalid) {
     const response = await worker.fetch(orderRequest(username), { DB: db }, {});
     assert.equal(response.status, 400, `Expected ${JSON.stringify(username)} to be rejected`);
-    assert.match((await response.json()).error, /Username/);
+    assert.match((await response.json()).error, /Tên người dùng/);
   }
 });
 
@@ -85,7 +85,7 @@ function webhookRequest(id, amount = 29000) {
   return new Request(`${site}/api/sepay/webhook`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: "Apikey test-secret" },
-    body: JSON.stringify({ id, transferType: "in", transferAmount: amount, content: "LGABCDEFGH" }),
+    body: JSON.stringify({ id, transferType: "in", transferAmount: amount, accountNumber: "5565662518", content: "LGABCDEFGH" }),
   });
 }
 
@@ -109,6 +109,8 @@ function paymentDb() {
           return { results: [] };
         },
         async run() {
+          if (sql.startsWith("UPDATE orders SET status = 'cancelled'")) return { meta: { changes: 0 } };
+          if (sql.startsWith("UPDATE payment_events")) return { meta: { changes: 1 } };
           if (sql.startsWith("INSERT OR IGNORE INTO payment_events")) {
             const id = this.values[0];
             if (state.transactionIds.has(id)) return { meta: { changes: 0 } };
@@ -135,7 +137,7 @@ test("webhook schedules activation only for the pending-to-paid transition", asy
   const db = paymentDb();
   const scheduled = [];
   const ctx = { waitUntil(promise) { scheduled.push(promise); } };
-  const env = { DB: db, SEPAY_WEBHOOK_API_KEY: "test-secret" };
+  const env = { DB: db, SEPAY_WEBHOOK_API_KEY: "test-secret", BANK_ACCOUNT: "5565662518" };
 
   for (const transactionId of ["transaction-1", "transaction-1", "transaction-2"]) {
     const response = await worker.fetch(webhookRequest(transactionId), env, ctx);
@@ -193,8 +195,10 @@ test("NoDNS grant completes paid iOS orders only after explicit active confirmat
     const mock = t.mock.method(globalThis, "fetch", async (url, options) => {
       assert.equal(url, "https://ctv.nodns.vn/api/v1/grant");
       assert.equal(options.headers["x-api-key"], "nodns-secret");
-      assert.deepEqual(JSON.parse(options.body), { user: "alice", days: 30, note: "LGABCDEFGH" });
-      return Response.json({ status: "success", data: { active, uid: "alice-uid" } });
+      const body = JSON.parse(options.body);
+      assert.deepEqual(body, { user: "alice", days: 30, note: "LGABCDEFGH", expiresAt: body.expiresAt });
+      assert.ok(Math.abs(Date.parse(body.expiresAt) - Date.now() - 30 * 86400000) < 1000);
+      return Response.json({ status: "success", data: { active, uid: "alice-uid", expiresAt: body.expiresAt } });
     });
     const response = await worker.fetch(webhookRequest(`nodns-${active}`), {
       DB: db, SEPAY_WEBHOOK_API_KEY: "test-secret", NODNS_API_KEY: "nodns-secret",
@@ -202,6 +206,32 @@ test("NoDNS grant completes paid iOS orders only after explicit active confirmat
     assert.equal(response.status, 200);
     await Promise.all(scheduled);
     assert.equal(db.state.order.status, active ? "completed" : "paid");
+    mock.mock.restore();
+  }
+});
+
+test("finite grants repair a lifetime response and stay paid until the expiry is confirmed", async (t) => {
+  for (const confirmsExpiry of [true, false]) {
+    const db = paymentDb(), tasks = [], calls = [];
+    let expected;
+    const mock = t.mock.method(globalThis, "fetch", async (url, options) => {
+      calls.push(url);
+      const body = JSON.parse(options.body);
+      if (url.endsWith("/grant")) {
+        expected = body.expiresAt;
+        return Response.json({ status: "success", data: { active: true, expiresAt: null } });
+      }
+      assert.ok(url.endsWith("/update"));
+      assert.deepEqual(body, { user: "alice", expiresAt: expected });
+      return Response.json({ status: "success", data: { expiresAt: confirmsExpiry ? expected : null } });
+    });
+    t.mock.method(console, "error", () => {});
+    await worker.fetch(webhookRequest(`expiry-${confirmsExpiry}`), {
+      DB: db, SEPAY_WEBHOOK_API_KEY: "test-secret", NODNS_API_KEY: "nodns-secret",
+    }, { waitUntil(promise) { tasks.push(promise); } });
+    await Promise.all(tasks);
+    assert.equal(db.state.order.status, confirmsExpiry ? "completed" : "paid");
+    assert.equal(calls.length, 2);
     mock.mock.restore();
   }
 });
