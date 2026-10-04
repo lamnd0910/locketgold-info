@@ -19,7 +19,7 @@ export default {
     } catch (error) {
       const status = Number(error.status) || 500;
       if (status >= 500) console.error("API error", error);
-      return secure(json({ error: status >= 500 ? "Hệ thống đang bận hoặc chưa được cấu hình." : error.message }, status));
+      return secure(json({ error: status >= 500 ? error.publicMessage || "Hệ thống đang bận hoặc chưa được cấu hình." : error.message }, status));
     }
   },
 };
@@ -213,6 +213,7 @@ async function activateOrder(env, order) {
 
 async function adminLogin(request, env) {
   rateLimit(request, "admin-login", 6, 15 * 60_000);
+  if (!env.SESSION_SECRET) throw httpError(503, "Chưa cấu hình SESSION_SECRET trên Worker đang phục vụ website.");
   if (env.NODNS_ADMIN_AUTH === "true") {
     const body = await readJson(request);
     if (!body.username || !body.password) throw httpError(400, "Nhập tên đăng nhập và mật khẩu.");
@@ -511,7 +512,7 @@ function randomCode(length) { const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; 
 function parseCookies(value) { return Object.fromEntries(value.split(";").map((part) => part.trim().split(/=(.*)/s)).filter(([key]) => key)); }
 function toBase64Url(bytes) { let binary = ""; for (const byte of bytes) binary += String.fromCharCode(byte); return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
 function fromBase64Url(value) { const base64 = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "="); return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0)); }
-function httpError(status, message) { const error = new Error(message); error.status = status; return error; }
+function httpError(status, message) { const error = new Error(message); error.status = status; if (status === 503) error.publicMessage = message; return error; }
 function requireDb(env) { if (!env.DB) throw httpError(503, "Cơ sở dữ liệu D1 chưa được kết nối."); }
 async function count(env, sql) { const row = await env.DB.prepare(sql).first(); return Number(row?.count || 0); }
 function logout(name) { return withCookie(withCookie(json({ success: true }), `${name}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`), clearRemoteCookie(name === "lg_admin" ? "admin" : "ctv")); }

@@ -6,6 +6,25 @@ import { grantPayload, providerRequest, remoteLogin, remoteCookie, publicCtv, po
 const site = "https://locketgold.info";
 const env = { SESSION_SECRET: "test-session-secret-with-at-least-32-bytes", NODNS_CTV_PORTAL: "true" };
 
+test("admin login reports missing session configuration without calling NoDNS", async (t) => {
+  const fetchMock = t.mock.method(globalThis, "fetch", async () => { throw new Error("Unexpected remote login"); });
+  t.mock.method(console, "error", () => {});
+  const response = await worker.fetch(new Request(`${site}/api/admin/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: "admin", password: "admin" }) }), { NODNS_ADMIN_AUTH: "true" }, {});
+  assert.equal(response.status, 503);
+  assert.match((await response.json()).error, /SESSION_SECRET/);
+  assert.equal(fetchMock.mock.callCount(), 0);
+});
+
+test("admin login returns a safe diagnostic when upstream is unavailable", async (t) => {
+  t.mock.method(globalThis, "fetch", async () => new Response("private server trace", { status: 500 }));
+  t.mock.method(console, "error", () => {});
+  const response = await worker.fetch(new Request(`${site}/api/admin/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: "admin", password: "admin" }) }), { ...env, NODNS_ADMIN_AUTH: "true" }, {});
+  assert.equal(response.status, 502);
+  const data = await response.json();
+  assert.match(data.error, /NoDNS/);
+  assert.equal(JSON.stringify(data).includes("private server trace"), false);
+});
+
 test("NoDNS uses x-api-key and the documented duration payload", async (t) => {
   t.mock.method(globalThis, "fetch", async (url, options) => {
     assert.equal(url, "https://ctv.nodns.vn/api/v1/grant");

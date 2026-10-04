@@ -2,7 +2,9 @@ const DEFAULT_BASE = "https://ctv.nodns.vn";
 const encoder = new TextEncoder();
 
 export function providerBase(env) {
-  const url = new URL(env.NODNS_API_BASE_URL || DEFAULT_BASE);
+  let url;
+  try { url = new URL(env.NODNS_API_BASE_URL || DEFAULT_BASE); }
+  catch { throw failure(503, "URL API NoDNS không hợp lệ."); }
   if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash) throw failure(503, "URL API NoDNS không hợp lệ.");
   return url.origin;
 }
@@ -16,15 +18,16 @@ export async function providerRequest(env, path, { method = "GET", body, cookie,
     if (!key) throw failure(503, "Chưa cấu hình NODNS_API_KEY.");
     headers["x-api-key"] = key;
   }
+  const base = providerBase(env);
   let response;
   try {
-    response = await fetch(`${providerBase(env)}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body), redirect: "error", signal: AbortSignal.timeout(20000) });
+    response = await fetch(`${base}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body), redirect: "error", signal: AbortSignal.timeout(20000) });
   } catch { throw failure(502, "Không thể kết nối API NoDNS. Vui lòng thử lại."); }
   const result = await response.json().catch(() => null);
   if (!result) throw failure(502, "API NoDNS trả về dữ liệu không hợp lệ.");
   if (!response.ok || result.success === false || result.status === "error") {
     const message = typeof result.error === "string" ? result.error : result.message;
-    throw failure(response.ok ? 400 : response.status, message || "Yêu cầu NoDNS không thành công.");
+    throw failure(response.ok ? 400 : response.status, response.status >= 500 ? `API NoDNS đang lỗi (HTTP ${response.status}). Vui lòng thử lại sau.` : message || "Yêu cầu NoDNS không thành công.");
   }
   return { result, response };
 }
@@ -61,13 +64,14 @@ export async function remoteCookie(request, env, role) {
 }
 
 export async function remoteLogin(request, env, role, credentials) {
+  const key = await cookieKey(env);
   const { response } = await providerRequest(env, role === "admin" ? "/api/auth/login" : "/api/ctv/auth/login", { method: "POST", body: credentials });
   const lines = response.headers.getSetCookie?.() || [response.headers.get("Set-Cookie") || ""];
   const cookies = lines.flatMap((line) => line.split(/,(?=\s*[^;,\s]+=)/)).map((line) => line.trim().split(";")[0]).filter(Boolean).join("; ");
   if (!cookies) throw failure(502, "API đăng nhập không trả về cookie phiên.");
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const plain = encoder.encode(JSON.stringify({ cookie: cookies, exp: Date.now() + 8 * 60 * 60_000 }));
-  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: encoder.encode(role) }, await cookieKey(env), plain);
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: encoder.encode(role) }, key, plain);
   return `lg_remote_${role}=${encode(iv)}.${encode(new Uint8Array(ciphertext))}; Path=/api/; HttpOnly; Secure; SameSite=Strict; Max-Age=28800`;
 }
 
@@ -81,4 +85,4 @@ export function portalOrders(result) {
   const orders = Array.isArray(data) ? data : data.orders || [];
   return orders.map((order) => ({ code: order.code || order.id || order.orderId || "—", username: order.username || order.userUpgraded || order.displayName || order.userId || "—", plan_name: order.plan_name || order.packageId || "Gold", status: order.status || (order.gold?.active === true ? "completed" : "pending"), amount: Number(order.amount || order.price || 0) }));
 }
-function failure(status, message) { return Object.assign(new Error(message), { status }); }
+function failure(status, message) { return Object.assign(new Error(message), { status, ...(status >= 500 ? { publicMessage: message } : {}) }); }
