@@ -1,11 +1,5 @@
 import { normalizeUsername } from "../src/username.js";
-
-const DEFAULT_PLANS = [
-  { id: "ios-month", name: "Gói 1 tháng", platform: "iOS", price: 29000, period: "1 tháng", featured: 0 },
-  { id: "ios-year", name: "Gói 1 năm", platform: "iOS", price: 60000, period: "1 năm", featured: 0 },
-  { id: "ios-lifetime", name: "Gói vĩnh viễn", platform: "iOS", price: 149000, period: "trọn đời", featured: 1 },
-  { id: "android-lifetime", name: "Gói vĩnh viễn", platform: "Android", price: 180000, period: "trọn đời", featured: 0 },
-];
+import { DEFAULT_PLANS } from "../src/plans.js";
 
 const loginAttempts = new Map();
 const encoder = new TextEncoder();

@@ -1,5 +1,6 @@
 import "./styles.css";
 import { normalizeUsername, parsePastedUsername } from "./username.js";
+import { DEFAULT_PLANS as fallbackPlans } from "./plans.js";
 
 const defaultDnsUrl = "https://ctv.nodns.vn/cai-dns";
 
@@ -14,13 +15,6 @@ const navItems = [
   ["guide", "/huong-dan/", "Hướng dẫn", "▣"],
   ["ctv", "/cong-tac-vien/", "Cộng tác viên", "♙"],
   ["contact", "/lien-he/", "Liên hệ", "☎"],
-];
-
-const fallbackPlans = [
-  { id: "ios-month", name: "Gói 1 tháng", platform: "iOS", price: 29000, period: "1 tháng", featured: false },
-  { id: "ios-year", name: "Gói 1 năm", platform: "iOS", price: 69000, period: "1 năm", featured: false },
-  { id: "ios-lifetime", name: "Gói vĩnh viễn", platform: "iOS", price: 139000, period: "trọn đời", featured: true },
-  { id: "android-lifetime", name: "Gói vĩnh viễn", platform: "Android", price: 99000, period: "trọn đời", featured: false },
 ];
 
 const fallbackPosts = [

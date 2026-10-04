@@ -18,6 +18,8 @@ npm run preview
 
 Nếu chưa gắn D1, toàn bộ trang công khai vẫn chạy; các thao tác tạo đơn, admin và CTV sẽ báo hệ thống chưa được cấu hình.
 
+Giá mặc định dùng chung cho giao diện và API nằm trong `src/plans.js`. Sửa giá tại đây để bảng giá và bước thanh toán thống nhất. Khi đã gắn D1, giá trong cơ sở dữ liệu được ưu tiên; đổi giá qua trang quản trị. Migration `0003_sync_default_prices.sql` sửa các mức seed cũ về 69.000đ / 139.000đ / 99.000đ nếu chưa có giá khuyến mãi hoặc mức giá tùy chỉnh khác.
+
 Trang `/thanh-toan/` có bốn bước: nhập thông tin, tự xác nhận Username, chọn gói và rà soát trước khi tạo đơn. Bước xác nhận chỉ hiển thị lại dữ liệu khách đã nhập; website chưa có API tra cứu tài khoản Locket nên không xác minh avatar hoặc trạng thái Gold.
 
 Trang `/huong-dan/` có bộ 4 bước tương tác và FAQ. Nội dung chuyển khoản luôn dẫn khách xem thông tin trên đơn thực tế, không hiển thị QR hoặc số tài khoản cố định từ ảnh minh họa.
