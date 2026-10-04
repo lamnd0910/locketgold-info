@@ -87,7 +87,7 @@ async function getPost(env, slug) {
 async function getPublicConfig(env) {
   const settings = await readSettings(env, ["dns_url", "apk_url", "support_email", "support_zalo", "support_facebook", "support_telegram"]);
   return json({
-    dns_url: settings.dns_url || env.DNS_DOWNLOAD_URL || "",
+    dns_url: settings.dns_url || env.DNS_DOWNLOAD_URL || "https://ctv.nodns.vn/cai-dns",
     apk_url: settings.apk_url || env.ANDROID_APK_URL || "",
     support_email: settings.support_email || env.SUPPORT_EMAIL || "",
     support_zalo: settings.support_zalo || env.SUPPORT_ZALO_URL || "",

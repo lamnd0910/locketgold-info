@@ -1,6 +1,8 @@
 import "./styles.css";
 import { normalizeUsername, parsePastedUsername } from "./username.js";
 
+const defaultDnsUrl = "https://ctv.nodns.vn/cai-dns";
+
 const page = document.body.dataset.page || "home";
 const app = document.querySelector("#app");
 
@@ -226,19 +228,6 @@ function adminPage() {
 app.innerHTML = (pages[page] || pages.home)();
 document.querySelector("#current-year")?.replaceChildren(String(new Date().getFullYear()));
 
-const privacyNote = document.querySelector(".hero-copy .safe-note");
-if (privacyNote) {
-  const heroCopy = privacyNote.parentElement;
-  const siteFooter = document.querySelector(".site-footer");
-  const mobilePrivacy = window.matchMedia("(max-width: 640px)");
-  const positionPrivacyNote = () => {
-    privacyNote.classList.toggle("container", mobilePrivacy.matches);
-    (mobilePrivacy.matches ? siteFooter : heroCopy).append(privacyNote);
-  };
-  positionPrivacyNote();
-  mobilePrivacy.addEventListener("change", positionPrivacyNote);
-}
-
 function initNavigation() {
   const toggle = document.querySelector(".menu-toggle");
   const nav = document.querySelector(".main-nav");
@@ -381,9 +370,11 @@ async function loadPosts() {
 }
 
 async function loadDownloads() {
+  enableDownload("#dns-download", defaultDnsUrl, "Mở hướng dẫn cài DNS ↗");
+  document.querySelector("#dns-url")?.replaceChildren(defaultDnsUrl);
   try {
     const config = await api("/api/public-config");
-    if (config.dns_url) enableDownload("#dns-download", config.dns_url, "Tải file DNS");
+    if (config.dns_url) enableDownload("#dns-download", config.dns_url, "Mở hướng dẫn cài DNS ↗");
     if (config.dns_url && document.querySelector("#dns-url")) document.querySelector("#dns-url").textContent = config.dns_url;
     if (config.apk_url) enableDownload("#apk-download", config.apk_url, "Tải APK Android");
     const contact = document.querySelector("#contact-links");
@@ -437,18 +428,28 @@ function initCheckout() {
   let quote = null;
   let activeStep = 1;
 
+  const applyPastedUsername = (value) => {
+    const username = parsePastedUsername(value);
+    if (!username) return false;
+    usernameInput.value = username;
+    usernameInput.setCustomValidity("");
+    usernameConfirmed.checked = false;
+    orderConfirmed.checked = false;
+    accountMessage.textContent = `Đã lấy Username @${username}; vui lòng đối chiếu trước khi tiếp tục.`;
+    accountMessage.className = "form-message is-success";
+    return true;
+  };
+
+  usernameInput.addEventListener("paste", (event) => {
+    const pasted = event.clipboardData?.getData("text/plain");
+    if (pasted && applyPastedUsername(pasted)) event.preventDefault();
+  });
+
   document.querySelector("#paste-username")?.addEventListener("click", async () => {
     try {
       if (!navigator.clipboard?.readText) throw new Error("Trình duyệt chưa cho phép đọc clipboard; hãy dán trực tiếp vào ô Username.");
       const pasted = await navigator.clipboard.readText();
-      const username = parsePastedUsername(pasted);
-      if (!username) throw new Error("Không tìm thấy Username hợp lệ trong nội dung vừa dán.");
-      usernameInput.value = username;
-      usernameInput.setCustomValidity("");
-      usernameConfirmed.checked = false;
-      orderConfirmed.checked = false;
-      accountMessage.textContent = `Đã lấy Username @${username}; vui lòng đối chiếu trước khi tiếp tục.`;
-      accountMessage.className = "form-message is-success";
+      if (!applyPastedUsername(pasted)) throw new Error("Không tìm thấy Username hợp lệ trong nội dung vừa dán.");
       usernameInput.focus();
     } catch (error) {
       accountMessage.textContent = error.message;
@@ -484,6 +485,7 @@ function initCheckout() {
   };
 
   const validateAccount = () => {
+    if (!normalizeUsername(usernameInput.value)) applyPastedUsername(usernameInput.value);
     const username = normalizeUsername(usernameInput.value);
     usernameInput.setCustomValidity(username ? "" : "Chỉ nhập Username hợp lệ, không dán link Locket.");
     if (!usernameInput.reportValidity()) return false;
@@ -533,7 +535,16 @@ function initCheckout() {
     document.querySelector("#review-total").textContent = money(quote?.total ?? plan?.price);
   };
 
-  usernameInput.addEventListener("input", () => { usernameInput.setCustomValidity(""); usernameConfirmed.checked = false; orderConfirmed.checked = false; });
+  usernameInput.addEventListener("input", (event) => {
+    usernameInput.setCustomValidity("");
+    usernameConfirmed.checked = false;
+    orderConfirmed.checked = false;
+    accountMessage.textContent = "";
+    if (event.inputType === "insertFromPaste") applyPastedUsername(usernameInput.value);
+  });
+  usernameInput.addEventListener("blur", () => {
+    if (/^https:\/\//i.test(usernameInput.value.trim())) applyPastedUsername(usernameInput.value);
+  });
   contactInput.addEventListener("input", () => { contactInput.setCustomValidity(""); usernameConfirmed.checked = false; orderConfirmed.checked = false; });
   planOptions.addEventListener("change", () => { quote = null; orderConfirmed.checked = false; quoteMessage.textContent = ""; renderSummary(); });
   promo.addEventListener("input", () => { quote = null; orderConfirmed.checked = false; quoteMessage.textContent = ""; renderSummary(); });
@@ -733,6 +744,41 @@ function bindAdminForms() {
   }));
 }
 
+let activityAudio;
+
+function initActivitySound() {
+  if (!document.querySelector("#activity-toast")) return;
+  const unlock = () => {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    try {
+      activityAudio ||= new AudioContext();
+      if (activityAudio.state === "suspended") activityAudio.resume().catch(() => {});
+    } catch { /* The notification still works when audio is unavailable. */ }
+  };
+  document.addEventListener("pointerdown", unlock, { passive: true });
+  document.addEventListener("keydown", unlock);
+}
+
+function playActivitySound() {
+  if (activityAudio?.state !== "running") return;
+  const start = activityAudio.currentTime;
+  [0, 0.22].forEach((offset, index) => {
+    const tone = activityAudio.createOscillator();
+    const volume = activityAudio.createGain();
+    tone.type = "sine";
+    tone.frequency.value = index ? 1318.51 : 1046.5;
+    volume.gain.setValueAtTime(0, start + offset);
+    volume.gain.linearRampToValueAtTime(0.1, start + offset + 0.01);
+    volume.gain.exponentialRampToValueAtTime(0.001, start + offset + 0.35);
+    tone.connect(volume);
+    volume.connect(activityAudio.destination);
+    tone.start(start + offset);
+    tone.stop(start + offset + 0.36);
+    tone.onended = () => { tone.disconnect(); volume.disconnect(); };
+  });
+}
+
 async function showActivity() {
   const toast = document.querySelector("#activity-toast");
   if (!toast) return;
@@ -751,6 +797,7 @@ async function showActivity() {
     const avatar = '<span class="activity-icon" aria-hidden="true"><img src="/images/huyhieu.png" alt="" width="48" height="48"></span>';
     toast.innerHTML = `<button type="button" aria-label="Đóng">×</button>${avatar}<div class="activity-copy"><div><strong>Giao dịch đã xác thực</strong><span class="activity-dot" aria-hidden="true">·</span></div><p><b>${escapeHtml(activity.username)}</b> vừa nâng cấp <b class="activity-plan">${escapeHtml(activity.plan_name)}</b></p></div>`;
     toast.hidden = false;
+    playActivitySound();
     toast.querySelector("button").addEventListener("click", () => { dismissed = true; toast.hidden = true; });
   };
   render(null);
@@ -779,4 +826,5 @@ initWelcomeModal();
 initCheckout();
 initCtv();
 initAdmin();
-window.requestAnimationFrame(showActivity);
+initActivitySound();
+window.setTimeout(showActivity, 15000);

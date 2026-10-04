@@ -501,8 +501,7 @@ body:not([data-page="admin"]) :is(.form-card label small, .privacy-line, .bank-b
   .hero-copy .safe-note small { font-size: 12px; }
   .hero-copy .safe-note b { width: 36px; height: 36px; font-size: 23px; }
   .safe-note { margin-top: 14px; gap: 8px; }
-  .site-footer > .safe-note { margin-top: 24px; text-align: left; }
-  .site-footer > .safe-note b { flex-shrink: 0; }
+  .hero-copy .safe-note { text-align: left; }
   .safe-note strong { font-size: .82rem; }
   .safe-note small { font-size: .72rem; }
   .hero-art { max-width: 350px; padding: 8px; border-radius: 25px 45px 25px 45px; }
@@ -555,7 +554,6 @@ body:not([data-page="admin"]) :is(.form-card label small, .privacy-line, .bank-b
   .hero-copy h1 { margin: 10px 0; font-size: clamp(1.55rem, 7.7vw, 2rem); }
   .hero-copy > p { margin-bottom: 12px; font-size: .94rem; line-height: 1.45; }
   .hero-actions { margin-top: 12px; }
-  .hero-copy .safe-note { display: none; }
   .hero-art img { max-height: 120px; }
   .float-chip { padding: 6px 8px; font-size: .65rem; }
 }

@@ -16,7 +16,7 @@ function usernameFromProfileUrl(value) {
     const url = new URL(value);
     if (!["locket.camera", "www.locket.camera", "locket.cam", "www.locket.cam"].includes(url.hostname.toLowerCase())) return "";
     const fromQuery = url.searchParams.get("username") || url.searchParams.get("user");
-    if (fromQuery) return fromQuery.replace(/^@/, "");
+    if (fromQuery) return normalizeUsername(fromQuery);
     const parts = url.pathname.split("/").filter(Boolean);
     if (!parts.length || parts.some((part) => ["links", "share", "story", "stories"].includes(part.toLowerCase()))) return "";
     const last = decodeURIComponent(parts.at(-1)).replace(/^@/, "");
