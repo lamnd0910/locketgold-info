@@ -4,6 +4,7 @@ import { activationConfirmed } from "./activation.js";
 import { adminCredential, passwordHash, verifyAdminPassword } from "./admin-account.js";
 import { DEFAULT_WELCOME, validateWelcome } from "../src/welcome-notice.js";
 import { downloadAndroidApk } from "./android-apk.js";
+import { sitemapResponse, postsResponse } from "./seo.js";
 import { providerRequest, unwrap, grantPayload, remoteCookie, remoteLogin, clearRemoteCookie, publicCtv, portalOrders, resolveNoDnsEnv, encryptNoDnsKey, sameGoldExpiry, purchasedGoldExpiry, providerGoldOrder } from "./nodns.js";
 
 const loginAttempts = new Map();
@@ -13,6 +14,14 @@ export default {
   async scheduled(_event, env, ctx) { ctx.waitUntil(Promise.all([expirePendingOrders(env), repairQueuedGoldExpiries(env)])); },
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.pathname === "/sitemap.xml") return sitemapResponse(request, env);
+    if (url.pathname === "/bai-viet/" && ["GET", "HEAD"].includes(request.method)) {
+      try { return await postsResponse(request, env); }
+      catch (error) {
+        console.error("Article metadata unavailable", error);
+        return new Response("Temporarily unavailable", { status: 503, headers: { "Retry-After": "60", "Cache-Control": "no-store" } });
+      }
+    }
     if (url.pathname.startsWith("/downloads/android/")) return secure(new Response("Not found", { status: 404 }));
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
 

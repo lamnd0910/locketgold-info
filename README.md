@@ -111,6 +111,16 @@ Trong admin, mục **Giao dịch SePay** gọi `/api/admin/sepay` để xem 100 
 
 Đăng nhập `/quan-tri-locket/` để cấu hình đường dẫn HTTPS tải DNS/APK, URL API kích hoạt và liên kết hỗ trợ. Đường dẫn riêng chỉ giảm khả năng bị dò thấy, không thay thế mật khẩu mạnh; khóa API và cấu hình SePay vẫn chỉ tồn tại trong Cloudflare Secrets. Sau khi cập nhật mã, áp dụng migration mới để bật trường giá cũ: `npx wrangler d1 migrations apply locketgold-db --remote` (nếu đã kết nối D1).
 
+## Sitemap và Google Search Console
+
+Tám trang công khai được dựng sẵn nội dung và liên kết HTML sau bước Vite build bằng `scripts/prerender.js`. Trình duyệt gắn các tương tác vào HTML có sẵn. Trang danh sách, phân trang và nội dung từng bài viết được Worker render từ D1 và kho bài nhập, nên crawler không chạy JavaScript vẫn đọc được nội dung và đi theo các thẻ `<a href>` đến các bài. Các template dùng chung nằm trong `src/page-render.js` và `src/post-view.js`.
+
+Sitemap công khai: `https://locketgold.info/sitemap.xml`, đã khai báo trong `public/robots.txt`. Build tự tạo bản XML trong `public/`; trên Cloudflare Workers, `/sitemap.xml` lấy các bài đã xuất bản từ D1 và ghép với kho bài nhập, dùng cùng quy tắc loại trùng của trang bài viết. Bài mới xuất bản tự xuất hiện trong sitemap, bộ nhớ đệm tối đa 5 phút. Không đưa trang quản trị, thanh toán, API hoặc phân trang vào sitemap. Ngày `lastmod` của bài lấy từ ngày xuất bản đã lưu, không dùng ngày build.
+
+Mỗi URL bài viết `/bai-viet/?bai=...` có canonical, tiêu đề và mô tả riêng trong HTML trả về từ Worker. URL bài không tồn tại trả HTTP 404 và `noindex`.
+
+Sau deploy, mở property `locketgold.info` trong Google Search Console → **Sơ đồ trang web / Sitemaps** → nhập `https://locketgold.info/sitemap.xml` (hoặc `sitemap.xml` nếu ô đã có tiền tố tên miền) → **Gửi / Submit**. Kiểm tra trạng thái đọc sitemap trong GSC; gửi sitemap không bảo đảm Google lập chỉ mục mọi URL.
+
 ## Deploy
 
 Cloudflare Git integration dùng:

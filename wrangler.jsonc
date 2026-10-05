@@ -19,7 +19,7 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*", "/downloads/android/*"]
+    "run_worker_first": ["/api/*", "/downloads/android/*", "/sitemap.xml", "/bai-viet/*"]
   },
 
   "routes": [

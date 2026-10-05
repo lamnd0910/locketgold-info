@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "npm run build && wrangler dev --local --port 8787",
-    "build": "vite build",
+    "build": "node scripts/generate-sitemap.js && vite build && node scripts/prerender.js",
     "test": "node --test",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy"
