@@ -4,6 +4,14 @@
   "main": "./worker/index.js",
   "triggers": { "crons": ["* * * * *"] },
   "compatibility_date": "2026-09-29",
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true
+    }
+  },
   "vars": {
     "SITE_URL": "https://locketgold.info",
     "NODNS_API_BASE_URL": "https://ctv.nodns.vn",
